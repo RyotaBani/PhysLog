@@ -1,0 +1,89 @@
+{
+  "identifier" : "A1B2C3D4",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "1500",
+      "familyShareable" : false,
+      "internalID" : "PL0000000003",
+      "localizations" : [
+        {
+          "description" : "コンディション分析と広告非表示を、買い切りでずっと利用できます。",
+          "displayName" : "PhysLog Pro（買い切り）",
+          "locale" : "ja_JP"
+        }
+      ],
+      "productID" : "com.ryotabani.PhysLog.pro.lifetime",
+      "referenceName" : "Pro Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "PhysLog",
+    "_developerTeamID" : "",
+    "_lastSynchronizedDate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "PLGROUP01",
+      "localizations" : [],
+      "name" : "PhysLog Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "300",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "PL0000000001",
+          "introductoryOffer" : {
+            "internalID" : "PLINTRO001",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "コンディション分析と広告非表示を月額でご利用いただけます。",
+              "displayName" : "PhysLog Pro（月額）",
+              "locale" : "ja_JP"
+            }
+          ],
+          "productID" : "com.ryotabani.PhysLog.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "PLGROUP01",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "2000",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "PL0000000002",
+          "introductoryOffer" : {
+            "internalID" : "PLINTRO002",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "コンディション分析と広告非表示を年額でご利用いただけます。",
+              "displayName" : "PhysLog Pro（年額）",
+              "locale" : "ja_JP"
+            }
+          ],
+          "productID" : "com.ryotabani.PhysLog.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Yearly",
+          "subscriptionGroupID" : "PLGROUP01",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

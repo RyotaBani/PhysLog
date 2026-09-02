@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  このファイルは Xcode が自動生成する Info.plist と「マージ」されます。
+	  （GENERATE_INFOPLIST_FILE = YES と INFOPLIST_FILE の併用）
+	  基本キーはここに書く必要がなく、ビルド設定で表現できないものだけを置いています。
+	-->
+
+	<!--
+	  AdMob の App ID。ユニットIDではなくアプリIDなので区切りは「~」です。
+	  間違えると起動直後に GADInvalidInitializationException で落ちます。
+	  本番の App ID を設定済み。DEBUG ビルドでは AdConfig 側の分岐により
+	  常にテスト用の広告ユニットが使われるため、開発中に本番広告は出ません。
+	-->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-5619606203492593~5658384269</string>
+
+	<!-- ATT ダイアログの説明文。曖昧な文言は審査で差し戻されます。 -->
+	<key>NSUserTrackingUsageDescription</key>
+	<string>アプリを無料で提供し続けるため、あなたに関連性の高い広告を表示する目的で使用します。許可しなくてもすべての機能をご利用いただけます。</string>
+
+	<!--
+	  ヘルスケアの読み取り理由。書き込みは行わないため
+	  NSHealthUpdateUsageDescription は不要です。
+	-->
+	<key>NSHealthShareUsageDescription</key>
+	<string>体重・体脂肪率・睡眠時間を読み込み、手入力なしで記録を続けられるようにします。読み込んだデータは端末内にのみ保存され、外部へ送信されることはありません。</string>
+
+	<!--
+	  SKAdNetwork（広告効果測定）の識別子。最低限 Google の識別子が必要です。
+	  収益を最大化したい場合は Google 公式ドキュメントの全リストを追加してください。
+	-->
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
+</dict>
+</plist>

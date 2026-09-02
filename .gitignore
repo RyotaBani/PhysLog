@@ -1,0 +1,17 @@
+# Xcode ビルド成果物
+build/
+DerivedData/
+build.log
+
+# Xcode ユーザー固有の状態（プロジェクト設定 project.pbxproj は追跡する）
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# ローカルのバックアップ
+PhysLog_backup_*
+
+# Claude Code のローカル設定
+.claude/settings.local.json

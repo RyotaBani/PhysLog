@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>サポート | PhysLog</title>
+<style>
+  :root {
+    --primary: #0A84FF;
+    --accent: #FF9F0A;
+    --text: #1c1c1e;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --bg: #ffffff;
+    --surface: #f8fafc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --text: #f2f2f7;
+      --muted: #9ca3af;
+      --line: #2f3336;
+      --bg: #111315;
+      --surface: #1a1d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 20px 80px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.85;
+    font-size: 16px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header {
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 36px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+  }
+  h1 { font-size: 30px; margin: 0 0 10px; letter-spacing: -.02em; }
+  .lead { color: var(--muted); margin: 0; }
+  h2 { font-size: 20px; margin: 44px 0 14px; }
+  p { margin: 0 0 16px; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 4px 18px;
+    margin-bottom: 10px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 14px 0;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+";
+    color: var(--primary);
+    font-size: 20px;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+  details[open] summary::after { content: "−"; }
+  details > p { padding-bottom: 6px; margin-bottom: 10px; }
+  .contact {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 26px;
+    margin-top: 24px;
+    text-align: center;
+  }
+  .contact a {
+    display: inline-block;
+    margin-top: 10px;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 26px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  a { color: var(--primary); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="badge">PhysLog</div>
+  <h1>サポート</h1>
+  <p class="lead">よくあるご質問と、お問い合わせ先をご案内します。</p>
+</header>
+
+<h2>よくある質問</h2>
+
+<details>
+  <summary>料金はかかりますか？</summary>
+  <p>完全無料です。サブスクリプションもアプリ内課金もありません。すべての機能を制限なくお使いいただけます。運営費をまかなうため画面下部にバナー広告を表示していますが、機能に制限はありません。</p>
+</details>
+
+<details>
+  <summary>アカウント登録は必要ですか？</summary>
+  <p>不要です。アプリを開いた瞬間から記録を始められます。データは端末内にのみ保存されるため、ログインの仕組み自体がありません。</p>
+</details>
+
+<details>
+  <summary>グラフが表示されません</summary>
+  <p>グラフの表示には同じ項目の記録が2件以上必要です。1件だけでは推移が描けないため、日を分けて複数回記録してください。</p>
+  <p>動作をすぐ確認したい場合は、設定タブの「デモデータを追加」をお試しください。過去3ヶ月分のサンプル記録が入り、すべてのグラフを確認できます（あとから「すべてのデータを削除」で消せます）。</p>
+</details>
+
+<details>
+  <summary>機種変更するとデータはどうなりますか？</summary>
+  <p>データは端末内にのみ保存されるため、そのままでは新しい端末に引き継がれません。機種変更の前に、設定タブの「CSVで書き出す」でバックアップを作成してください。</p>
+  <p>クラウド同期による自動引き継ぎは、今後のアップデートで対応を検討しています。</p>
+</details>
+
+<details>
+  <summary>記録した内容を修正できますか？</summary>
+  <p>できます。一覧画面で修正したい記録をタップすると編集画面が開きます。削除する場合は、記録を左にスワイプしてください。</p>
+</details>
+
+<details>
+  <summary>登録されていない種目を記録したい</summary>
+  <p>身体能力の記録画面で「自由入力」をオンにすると、任意の種目名と単位を設定できます。競技特有のテストにも対応できます。</p>
+  <p>トレーニングの種目名も自由に入力できます。リストアイコンから既存の種目を検索することも可能です。</p>
+</details>
+
+<details>
+  <summary>50m走のようなタイム種目も正しく扱われますか？</summary>
+  <p>はい。50m走・100m走・20mスプリントはタイムが短いほど良い記録として扱われ、自己ベスト判定や変化量の色分けに反映されます。</p>
+</details>
+
+<details>
+  <summary>総挙上量とは何ですか？</summary>
+  <p>「重量 × 回数 × セット数」を全種目分合計した数値です。トレーニング量の推移を追う指標として使えます。重量・回数・セット数の3つすべてを入力した種目のみ計算対象になります。</p>
+</details>
+
+<details>
+  <summary>CSVを開くと文字化けします</summary>
+  <p>書き出したCSVはBOM付きUTF-8のため、Excelでもそのまま開けます。文字化けが起きる場合は、Excelの「データ」→「テキストファイル」から文字コードにUTF-8を指定してインポートしてください。</p>
+</details>
+
+<details>
+  <summary>Apple Watch やヘルスケアアプリと連携しますか？</summary>
+  <p>現在のバージョンでは連携していません。HealthKit連携（体重・睡眠の自動取り込み）は今後のアップデートで検討しています。</p>
+</details>
+
+<h2>不具合の報告・ご要望</h2>
+<p>不具合を報告いただく際は、以下の情報を添えていただけると調査がスムーズです。</p>
+<p>
+  ・端末の機種（例：iPhone 15 Pro）<br>
+  ・iOSのバージョン<br>
+  ・PhysLogのバージョン（設定タブに表示されます）<br>
+  ・どの操作をしたときに起きたか
+</p>
+
+<div class="contact">
+  <p><strong>お問い合わせ</strong><br>
+  通常2〜3営業日以内に返信します。</p>
+  <a href="mailto:nakyatsukuruapp@gmail.com?subject=PhysLog%20%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">メールで問い合わせる</a>
+</div>
+
+<h2>関連リンク</h2>
+<p><a href="privacy.html">プライバシーポリシー</a></p>
+
+<footer>
+  &copy; 2026 Ryota Bani. PhysLog.
+</footer>
+
+</div>
+</body>
+</html>
