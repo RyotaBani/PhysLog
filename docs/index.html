@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhysLog</title>
+<meta name="description" content="スポーツ選手・ジム利用者のための身体データ記録アプリ（iOS）">
+<style>
+  :root {
+    --primary: #0A84FF;
+    --text: #1c1c1e;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --bg: #ffffff;
+    --surface: #f8fafc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --text: #f2f2f7;
+      --muted: #9ca3af;
+      --line: #2f3336;
+      --bg: #111315;
+      --surface: #1a1d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 20px 80px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.85;
+    font-size: 16px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header {
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 36px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+  }
+  h1 { font-size: 30px; margin: 0 0 10px; letter-spacing: -.02em; }
+  .lead { color: var(--muted); font-size: 15px; margin: 0; }
+  h2 {
+    font-size: 20px;
+    margin: 44px 0 12px;
+    padding-top: 4px;
+    letter-spacing: -.01em;
+  }
+  p { margin: 0 0 16px; }
+  ul { margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  .links { list-style: none; margin: 24px 0 0; padding: 0; }
+  .links li { margin-bottom: 12px; }
+  .links a {
+    display: block;
+    background: var(--surface);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .links a:hover { border-left-width: 6px; }
+  .links .t { font-weight: 600; color: var(--primary); }
+  .links .d { display: block; color: var(--muted); font-size: 14px; }
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  a { color: var(--primary); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="badge">PhysLog</div>
+  <h1>PhysLog</h1>
+  <p class="lead">スポーツ選手・ジム利用者のための身体データ記録アプリ（iOS）</p>
+</header>
+
+<p>
+  Physical（身体的な）+ Log（記録）。体重や筋トレだけでなく、
+  <strong>垂直跳び・50m走・握力といった競技パフォーマンスの土台になる数値</strong>を
+  長期的に残していけることが、一般的な筋トレ記録アプリとの違いです。
+</p>
+
+<h2>記録できるもの</h2>
+<ul>
+  <li>身体計測：体重・体脂肪率・各部位のサイズ</li>
+  <li>運動能力：垂直跳び・50m走・握力などの測定値</li>
+  <li>トレーニング：種目ごとの重量・回数・セット数</li>
+  <li>コンディション：睡眠・疲労感・体調</li>
+</ul>
+
+<h2>リンク</h2>
+<ul class="links">
+  <li>
+    <a href="privacy.html">
+      <span class="t">プライバシーポリシー</span>
+      <span class="d">アプリが扱うデータの取り扱いについて</span>
+    </a>
+  </li>
+  <li>
+    <a href="support.html">
+      <span class="t">サポート</span>
+      <span class="d">よくある質問とお問い合わせ</span>
+    </a>
+  </li>
+  <li>
+    <a href="https://github.com/RyotaBani/PhysLog">
+      <span class="t">GitHub リポジトリ</span>
+      <span class="d">ソースコードと開発ドキュメント</span>
+    </a>
+  </li>
+</ul>
+
+<footer>
+  &copy; 2026 Ryota Bani. PhysLog.
+</footer>
+
+</div>
+</body>
+</html>
