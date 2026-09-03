@@ -1,6 +1,6 @@
 # PhysLog
 
-スポーツ選手・ジム利用者のための身体データ記録アプリ（iOS / iPadOS）
+スポーツ選手・ジム利用者のための身体データ記録アプリ（iOS）
 
 Physical（身体的な）+ Log（記録）。体重や筋トレだけでなく、**垂直跳び・50m走・握力といった競技パフォーマンスの土台になる数値**を長期的に残していけることが、一般的な筋トレ記録アプリとの違いです。
 
@@ -11,7 +11,7 @@ Physical（身体的な）+ Log（記録）。体重や筋トレだけでなく�
 | 項目 | 要件 |
 |------|------|
 | Xcode | 16.0 以降 |
-| iOS / iPadOS | 17.0 以降 |
+| iOS | 17.0 以降（iPhone 専用） |
 | 依存ライブラリ | なし（Apple 標準フレームワークのみ） |
 
 SwiftUI / SwiftData / Swift Charts で構成しています。外部パッケージは一切使っていないため、`Package.resolved` の解決や CocoaPods の導入は不要です。
@@ -50,9 +50,14 @@ SwiftUI / SwiftData / Swift Charts で構成しています。外部パッケー
 ```
 PhysLog/
 ├── PhysLog.xcodeproj/
+├── Info.plist                    AdMob / ATT / ヘルスケアのキー（同期フォルダの外に置く）
+├── PhysLog.entitlements          HealthKit
+├── PhysLog.storekit              課金のローカルテスト設定
+├── run.sh / build.sh             ビルド・起動スクリプト
 └── PhysLog/
     ├── PhysLogApp.swift          アプリ起動・ModelContainer 構築
     ├── ContentView.swift         タブ構成
+    ├── PrivacyInfo.xcprivacy     プライバシーマニフェスト
     ├── Models/                   SwiftData モデル4種
     │   ├── BodyMeasurement.swift
     │   ├── PhysicalAbility.swift
@@ -64,20 +69,39 @@ PhysLog/
     │   ├── Record/               記録の一覧・追加・編集
     │   ├── Graph/                Swift Charts によるグラフ
     │   ├── Menu/                 メニュー提案（ルールエンジン）
-    │   └── Settings/             設定・CSV書き出し
+    │   └── Settings/             設定・CSV書き出し・取り込み導線
+    ├── Analysis/                 コンディション分析（相関エンジン + 散布図）
+    ├── Health/                   ヘルスケア連携（HealthKit）
+    ├── Import/                   CSV / OCR 取り込み
+    ├── Ads/                      バナー広告（AdMob）
+    ├── Pro/                      課金（StoreKit 2・v1.0 では導線オフ）
     ├── Utilities/
     │   ├── Theme.swift           配色と共通UI部品
+    │   ├── FeatureFlags.swift    課金導線・分析開放の切り替え
     │   └── SampleData.swift      デモデータ生成
     └── Assets.xcassets/
         └── AppIcon.appiconset/   1024×1024 アイコン同梱済み
 
 docs/
-├── privacy.html                  プライバシーポリシー（GitHub Pages 用）
-├── support.html                  サポート・FAQ（GitHub Pages 用）
-└── AppStore.md                   App Store Connect 登録内容と提出チェックリスト
+├── index.html                    GitHub Pages のトップ（Claude Code が生成）
+├── privacy.html                  プライバシーポリシー
+├── support.html                  サポート・FAQ
+├── AppStore.md                   申請文と提出チェックリスト
+├── LAUNCH.md                     ローンチ手順
+├── ADMOB_SETUP.md                広告の導入手順
+├── HEALTHKIT.md                  ヘルスケア連携の仕様
+├── IMPORT.md                     CSV / OCR 取り込みの仕様
+├── PRO.md                        課金機能の設計
+├── RELEASE.md                    リリース前の確認事項
+└── TESTING.md                    実機テストのチェックリスト
+
+screenshots/                      App Store 用スクリーンショット（1320×2868）
+tools/                            アイコン・スクリーンショット生成スクリプト
 ```
 
 Xcode 16 の同期グループ（synchronized folder）形式を採用しているため、**ファイルを追加してもプロジェクトへの登録作業は不要**です。フォルダに置けばそのままビルド対象になります。
+
+ただし `Info.plist` と `PhysLog.entitlements` は同期フォルダの**外**（プロジェクト直下）に置いています。同期フォルダ内に入れるとリソースとしても取り込まれ、`Multiple commands produce Info.plist` でビルドが失敗します。
 
 ---
 
@@ -114,6 +138,40 @@ Xcode 16 の同期グループ（synchronized folder）形式を採用してい�
 - CSV 書き出し（BOM付きUTF-8 / Excel対応）
 - デモデータ生成・全削除
 
+### コンディション分析
+
+同じ日に記録された「睡眠・疲労・体調」と「総挙上量・身体能力」を突き合わせ、
+ピアソンの積率相関係数を計算して日本語の所見と散布図で表示します。
+
+例：「睡眠時間が長い日ほど、総挙上量が高い傾向がありました（強い関係・24日分のデータ）」
+
+データが8件未満のときは相関を表示しません。少数のデータで相関を語ると
+偶然の一致を法則のように見せてしまうためです。所見はすべて「〜傾向がありました」で統一し、
+相関は因果ではない旨を画面下部に常時表示しています。
+
+### データの取り込み
+
+メーカーごとの連携ではなく、データの出口の種類で3経路を押さえています。
+
+| 経路 | カバー範囲 | 取得できる項目 |
+|------|-----------|--------------|
+| ヘルスケア | OSハブに同期する全機器（タニタ家庭用・InBody家庭用・Withings・Apple Watch 等） | 体重・体脂肪率・睡眠 |
+| CSV | ファイル出力できる全て（業務用タニタ MC-980A/MC-780 等） | 体重・体脂肪率・**筋肉量** |
+| 写真（OCR） | 上2つで取れない全て（InBody の結果用紙、アプリのスクリーンショット） | 体重・体脂肪率・**筋肉量** |
+
+3経路ともメーカー非依存のため、新しい体組成計が出ても実装は不要です。
+CSV は Shift_JIS を含む文字コードを自動判定し、列の対応づけを見出しから推定します。
+OCR は Vision フレームワークで端末内完結し、画像は外部へ送信されません。
+
+いずれの経路でも、**入力済みの記録が上書きされることはありません**（空いている項目のみ補完）。
+
+### 収益モデル
+
+v1.0 は完全無料 + バナー広告（Google AdMob）で提供します。
+課金の実装（StoreKit 2 / ペイウォール）は残していますが、
+`FeatureFlags.isProEnabled = false` で導線を塞いでいるため、
+App Store Connect でのサブスクリプション登録は不要です。
+
 ---
 
 ## 今後の拡張候補
@@ -135,7 +193,7 @@ App Store Connect への登録内容（アプリ名・説明文・キーワー�
 1. **Bundle Identifier の変更** — `com.ryotabani.PhysLog` を自分のものに
 2. **Signing チームの選択** — Xcode の Signing & Capabilities
 3. **プライバシーポリシー / サポートページの公開** — `docs/` の2ファイルを GitHub Pages へ（手順は AppStore.md に記載）
-4. **スクリーンショット撮影** — デモデータを入れた状態で iPhone 6.9インチ と iPad 13インチ の2サイズ
+4. **スクリーンショット撮影** — デモデータを入れた状態で iPhone 6.9インチ（1320×2868）
 5. **Archive & 提出**
 
 アイコン・輸出コンプライアンス設定・免責文言・プライバシー対応はすべて実装済みです。
