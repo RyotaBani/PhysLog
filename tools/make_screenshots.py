@@ -8,6 +8,17 @@
   - 背景はアプリのテーマカラー（濃紺〜青）のグラデーション
   - 1枚目で「何のアプリか」が完結するようにする
 """
+#
+# 【注意】このスクリプトの出力は実行環境に依存します。
+#
+# フォント（macOS: ヒラギノ / Linux: Noto Sans CJK）と Pillow のバージョンが
+# 違うと、同じコードでも生成結果のバイト列が変わり、git の差分になります。
+#
+# リポジトリに入っている画像は Linux 環境で生成したものです。
+# 意図的に作り直す場合を除き、実行しないでください。
+# 実行する場合は生成環境を固定し、結果を必ず目視で確認してから差し替えてください。
+#
+
 from PIL import Image, ImageDraw, ImageFont
 import os
 
@@ -585,7 +596,8 @@ if __name__ == "__main__":
         s = fn()
         img = compose(s, head, sub, acc)
         path = f"{out}/{i:02d}_appstore_1320x2868.png"
-        img.save(path, "PNG")
+        # 再生成しても内容が同じならバイト差分が出ないようにする
+        img.save(path, "PNG", optimize=True)
         print(f"saved {path}  {img.size}")
         # 目視確認用の縮小版が必要なら以下を有効化
         # img.resize((330, 717), Image.LANCZOS).save(f"{out}/preview_{i}.png")

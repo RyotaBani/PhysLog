@@ -6,6 +6,17 @@
   - 「身体データが伸びていく」ことを一目で伝える
   - 小サイズでも潰れないよう要素は4つまで、線は太めに
 """
+#
+# 【注意】このスクリプトの出力は実行環境に依存します。
+#
+# フォント（macOS: ヒラギノ / Linux: Noto Sans CJK）と Pillow のバージョンが
+# 違うと、同じコードでも生成結果のバイト列が変わり、git の差分になります。
+#
+# リポジトリに入っている画像は Linux 環境で生成したものです。
+# 意図的に作り直す場合を除き、実行しないでください。
+# 実行する場合は生成環境を固定し、結果を必ず目視で確認してから差し替えてください。
+#
+
 from PIL import Image, ImageDraw
 import math
 
@@ -118,5 +129,7 @@ if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out = os.path.join(root, "PhysLog/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png")
     icon = build()
-    icon.save(out, "PNG")
+    # 内容が同じなら毎回同一バイトになるよう、付随情報を書き込まない。
+    # そうしないと再生成のたびに git 差分が出る。
+    icon.save(out, "PNG", optimize=True)
     print("saved:", out, icon.size, icon.mode)

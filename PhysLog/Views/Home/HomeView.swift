@@ -118,7 +118,8 @@ struct HomeView: View {
                 icon: "scalemass.fill",
                 color: .physlogPrimary,
                 caption: latest.map { $0.date.relativeJP },
-                delta: weightDelta.map { String(format: "%+.1f kg", $0) }
+                delta: weightDelta.map { String(format: "%+.1f kg", $0) },
+                deltaValue: weightDelta
             )
 
             StatCard(
@@ -249,7 +250,14 @@ struct StatCard: View {
     let icon: String
     let color: Color
     var caption: String? = nil
+
+    /// 変化量の表示文字列（例: "+1.0 kg"）
     var delta: String? = nil
+
+    /// 変化量の数値。色の判定はこちらで行う。
+    /// 表示文字列の先頭が "-" かどうかで判定すると、
+    /// 書式を変えた際に気づかないまま壊れるため分けている。
+    var deltaValue: Double? = nil
 
     /// 変化量を色で評価するか。
     ///
@@ -258,7 +266,7 @@ struct StatCard: View {
     /// アプリが一方向を「良い」と決めつけないよう、既定では色を付けない。
     var deltaJudgement: DeltaJudgement = .neutral
 
-    enum DeltaJudgement {
+    enum DeltaJudgement: Equatable {
         case neutral        // 良し悪しを判定しない
         case higherIsBetter
         case lowerIsBetter
@@ -300,21 +308,18 @@ struct StatCard: View {
                 if let delta {
                     Text(delta)
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(deltaColor(for: delta))
+                        .foregroundStyle(deltaColor)
                 }
             }
         }
     }
 
-    private func deltaColor(for text: String) -> Color {
-        switch deltaJudgement {
-        case .neutral:
+    private var deltaColor: Color {
+        guard deltaJudgement != .neutral, let value = deltaValue else {
             return .secondary
-        case .higherIsBetter:
-            return text.hasPrefix("-") ? .physlogPink : .physlogAccent
-        case .lowerIsBetter:
-            return text.hasPrefix("-") ? .physlogAccent : .physlogPink
         }
+        let improved = (deltaJudgement == .higherIsBetter) ? value >= 0 : value <= 0
+        return improved ? .physlogAccent : .physlogPink
     }
 }
 
