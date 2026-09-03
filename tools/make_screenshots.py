@@ -531,7 +531,9 @@ SHOTS = [
 ]
 
 if __name__ == "__main__":
-    out = "/mnt/user-data/outputs/screenshots"
+    # プロジェクトルート直下の screenshots/ に出力する
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out = os.path.join(root, "screenshots")
     os.makedirs(out, exist_ok=True)
     for i, (fn, head, sub, acc) in enumerate(SHOTS, 1):
         s = fn()
@@ -539,5 +541,5 @@ if __name__ == "__main__":
         path = f"{out}/{i:02d}_appstore_1320x2868.png"
         img.save(path, "PNG")
         print(f"saved {path}  {img.size}")
-        # 目視確認用の縮小版
-        img.resize((330, 717), Image.LANCZOS).save(f"/tmp/prev_{i}.png")
+        # 目視確認用の縮小版が必要なら以下を有効化
+        # img.resize((330, 717), Image.LANCZOS).save(f"{out}/preview_{i}.png")

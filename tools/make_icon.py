@@ -114,10 +114,9 @@ def build():
 
 
 if __name__ == "__main__":
-    out = "PhysLog/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png"
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out = os.path.join(root, "PhysLog/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png")
     icon = build()
     icon.save(out, "PNG")
-    # 見た目確認用に小サイズも書き出す
-    icon.resize((180, 180), Image.LANCZOS).save("/tmp/icon_180.png")
-    icon.resize((60, 60), Image.LANCZOS).save("/tmp/icon_60.png")
     print("saved:", out, icon.size, icon.mode)

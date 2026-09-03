@@ -313,7 +313,12 @@ App Store Connect で必須となるサイズは1つだけです。他サイズ�
 | iPhone 6.9インチ（15 Pro Max / 16 Pro Max） | 1320 × 2868 | 3〜10枚 |
 
 v1.0 は iPhone 専用（`TARGETED_DEVICE_FAMILY = 1`）で提出するため、iPad 用のスクリーンショットは不要です。
-生成済みのファイルは `screenshots/` にあります。
+生成済みのファイルは `screenshots/` にあります（5枚）。
+文言や配色を変更したい場合は `tools/make_screenshots.py` を編集して再生成できます。
+
+```bash
+python3 tools/make_screenshots.py
+```
 
 ### 推奨する構成（5枚）
 

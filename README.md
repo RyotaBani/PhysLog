@@ -95,7 +95,7 @@ docs/
 ├── RELEASE.md                    リリース前の確認事項
 └── TESTING.md                    実機テストのチェックリスト
 
-screenshots/                      App Store 用スクリーンショット（1320×2868）
+screenshots/                      App Store 用スクリーンショット（1320×2868・5枚）
 tools/                            アイコン・スクリーンショット生成スクリプト
 ```
 

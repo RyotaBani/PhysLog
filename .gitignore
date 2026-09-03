@@ -15,3 +15,7 @@ PhysLog_backup_*
 
 # Claude Code のローカル設定
 .claude/settings.local.json
+
+# Python (tools/ のスクリプト実行時に生成される)
+__pycache__/
+*.pyc
