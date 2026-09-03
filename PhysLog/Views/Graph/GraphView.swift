@@ -136,13 +136,21 @@ struct GraphView: View {
         }
     }
 
+    /// 変化量を色で評価してよい指標かどうか。
+    ///
+    /// 体組成（体重・体脂肪率・筋肉量）は、増やしたいのか減らしたいのかが
+    /// 競技や時期によって変わるため、アプリ側で良し悪しを決めない。
+    /// 方向が明確な身体能力と挙上量だけ色を付ける。
+    private var judgesDirection: Bool {
+        switch metric {
+        case .ability, .volume: return true
+        default:                return false
+        }
+    }
+
     /// タイム種目は下降がプラス評価
     private var lowerIsBetter: Bool {
-        switch metric {
-        case .bodyFat: return true
-        case .ability: return AbilityPreset.isLowerBetter(abilityType)
-        default:       return false
-        }
+        metric == .ability && AbilityPreset.isLowerBetter(abilityType)
     }
 
     var body: some View {
@@ -302,7 +310,15 @@ struct GraphView: View {
         let first = values.first ?? 0
         let last = values.last ?? 0
         let change = last - first
-        let isGood = lowerIsBetter ? change <= 0 : change >= 0
+
+        // 良し悪しを判定しない指標は中立色にする
+        let changeColor: Color
+        if judgesDirection {
+            let isGood = lowerIsBetter ? change <= 0 : change >= 0
+            changeColor = isGood ? .physlogAccent : .physlogPink
+        } else {
+            changeColor = .secondary
+        }
 
         return Card(padding: 14) {
             HStack(spacing: 0) {
@@ -315,7 +331,7 @@ struct GraphView: View {
                 SummaryCell(
                     label: "変化",
                     text: (change >= 0 ? "+" : "") + format(change),
-                    color: isGood ? .physlogAccent : .physlogPink
+                    color: changeColor
                 )
             }
         }

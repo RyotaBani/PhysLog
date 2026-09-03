@@ -118,8 +118,7 @@ struct HomeView: View {
                 icon: "scalemass.fill",
                 color: .physlogPrimary,
                 caption: latest.map { $0.date.relativeJP },
-                delta: weightDelta.map { String(format: "%+.1f kg", $0) },
-                deltaIsGood: (weightDelta ?? 0) <= 0
+                delta: weightDelta.map { String(format: "%+.1f kg", $0) }
             )
 
             StatCard(
@@ -251,7 +250,19 @@ struct StatCard: View {
     let color: Color
     var caption: String? = nil
     var delta: String? = nil
-    var deltaIsGood: Bool = true
+
+    /// 変化量を色で評価するか。
+    ///
+    /// 体重・体脂肪率・筋肉量は、増やしたいのか減らしたいのかが
+    /// 競技や時期（増量期・減量期）によって変わる。
+    /// アプリが一方向を「良い」と決めつけないよう、既定では色を付けない。
+    var deltaJudgement: DeltaJudgement = .neutral
+
+    enum DeltaJudgement {
+        case neutral        // 良し悪しを判定しない
+        case higherIsBetter
+        case lowerIsBetter
+    }
 
     var body: some View {
         Card(padding: 14) {
@@ -289,9 +300,20 @@ struct StatCard: View {
                 if let delta {
                     Text(delta)
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(deltaIsGood ? Color.physlogAccent : Color.physlogPink)
+                        .foregroundStyle(deltaColor(for: delta))
                 }
             }
+        }
+    }
+
+    private func deltaColor(for text: String) -> Color {
+        switch deltaJudgement {
+        case .neutral:
+            return .secondary
+        case .higherIsBetter:
+            return text.hasPrefix("-") ? .physlogPink : .physlogAccent
+        case .lowerIsBetter:
+            return text.hasPrefix("-") ? .physlogAccent : .physlogPink
         }
     }
 }
