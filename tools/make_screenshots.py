@@ -30,12 +30,58 @@ CARD   = (255, 255, 255)
 BG     = (242, 243, 247)
 LINE   = (228, 230, 237)
 
-FONT_DIR = "/usr/share/fonts/opentype/noto"
+# 日本語フォントの候補。環境によって入っているものが違うため順に試す。
+# macOS はヒラギノ、Linux は Noto Sans CJK を想定している。
+FONT_CANDIDATES = {
+    "Bold": [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+        "/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
+        "/System/Library/Fonts/Hiragino Sans W6.ttc",
+        "/Library/Fonts/NotoSansCJKjp-Bold.otf",
+    ],
+    "Medium": [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Medium.ttc",
+        "/System/Library/Fonts/ヒラギノ角ゴシック W5.ttc",
+        "/System/Library/Fonts/Hiragino Sans W5.ttc",
+        "/Library/Fonts/NotoSansCJKjp-Medium.otf",
+    ],
+    "Regular": [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+        "/System/Library/Fonts/Hiragino Sans W3.ttc",
+        "/Library/Fonts/NotoSansCJKjp-Regular.otf",
+    ],
+}
+
+_font_path_cache = {}
+
+def _resolve_font_path(weight):
+    """使えるフォントを1つ選ぶ。見つからなければ分かりやすいエラーにする。"""
+    if weight in _font_path_cache:
+        return _font_path_cache[weight]
+
+    for path in FONT_CANDIDATES.get(weight, []):
+        if os.path.exists(path):
+            _font_path_cache[weight] = path
+            return path
+
+    # 指定ウェイトが無ければ他のウェイトで代用する
+    for alt in ("Bold", "Medium", "Regular"):
+        for path in FONT_CANDIDATES[alt]:
+            if os.path.exists(path):
+                _font_path_cache[weight] = path
+                return path
+
+    raise RuntimeError(
+        "日本語フォントが見つかりませんでした。\n"
+        "macOS なら通常はヒラギノが標準で入っています。\n"
+        "Linux の場合は次でインストールしてください:\n"
+        "  sudo apt install fonts-noto-cjk"
+    )
 
 def font(size, weight="Bold"):
-    """Noto Sans CJK JP を返す。ttc の index=0 が JP。"""
-    path = f"{FONT_DIR}/NotoSansCJK-{weight}.ttc"
-    return ImageFont.truetype(path, size, index=0)
+    """日本語フォントを返す。ttc の index=0 が日本語。"""
+    return ImageFont.truetype(_resolve_font_path(weight), size, index=0)
 
 def lerp(a, b, t):
     return tuple(round(x + (y - x) * t) for x, y in zip(a, b))

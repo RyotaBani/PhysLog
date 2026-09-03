@@ -317,8 +317,12 @@ v1.0 は iPhone 専用（`TARGETED_DEVICE_FAMILY = 1`）で提出するため、
 文言や配色を変更したい場合は `tools/make_screenshots.py` を編集して再生成できます。
 
 ```bash
+cd ~/PhysLog
 python3 tools/make_screenshots.py
 ```
+
+macOS ではヒラギノ、Linux では Noto Sans CJK を自動で探します。
+どちらも見つからない場合はエラーメッセージに導入方法が表示されます。
 
 ### 推奨する構成（5枚）
 
