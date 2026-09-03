@@ -75,13 +75,13 @@ private struct AdBannerContent: View {
     @State private var state: LoadState = .loading
     @State private var height: CGFloat = AdConfig.reservedHeight
 
-    /// 表示上の高さ
+    /// 表示上の高さ。
+    ///
+    /// 読み込み中も実際のバナー高さを確保しておく。
+    /// 固定値（50pt）で確保してから実寸に切り替えると、
+    /// アダプティブバナーの高さ次第で最大 100pt 近くレイアウトが跳ねるため。
     private var displayHeight: CGFloat {
-        switch state {
-        case .loading: return AdConfig.reservedHeight
-        case .loaded:  return height
-        case .failed:  return 0
-        }
+        state == .failed ? 0 : height
     }
 
     var body: some View {
@@ -108,8 +108,10 @@ private struct AdBannerRepresentable: UIViewRepresentable {
 
     func makeUIView(context: Context) -> BannerView {
         // 画面幅に合わせた「アンカー型アダプティブバナー」を要求する。
-        // 固定サイズより収益性が高く、iPad でも間延びしない。
-        let size = currentOrientationAnchoredAdaptiveBanner(width: max(width, 320))
+        // currentOrientationAnchoredAdaptiveBanner は非推奨になったため
+        // largeAnchoredAdaptiveBanner を使う。高さは 50〜150pt の範囲で
+        // 端末に応じて決まり、従来（50〜90pt）より高くなることがある。
+        let size = largeAnchoredAdaptiveBanner(width: max(width, 320))
 
         let banner = BannerView(adSize: size)
         banner.adUnitID = AdConfig.bannerUnitID
@@ -125,7 +127,7 @@ private struct AdBannerRepresentable: UIViewRepresentable {
 
     func updateUIView(_ banner: BannerView, context: Context) {
         // 回転などで幅が変わったときだけサイズを取り直す
-        let newSize = currentOrientationAnchoredAdaptiveBanner(width: max(width, 320))
+        let newSize = largeAnchoredAdaptiveBanner(width: max(width, 320))
         if abs(banner.adSize.size.width - newSize.size.width) > 1 {
             banner.adSize = newSize
             DispatchQueue.main.async {

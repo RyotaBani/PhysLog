@@ -1,7 +1,11 @@
 import Foundation
 
 #if canImport(Vision)
-import Vision
+// Vision の型（VNImageRequestHandler / VNRecognizeTextRequest）は
+// Sendable に適合していないため、@Sendable クロージャでの捕捉が警告になる。
+// 実際には生成から perform まで単一の処理内で完結しており競合しないため、
+// このモジュール由来の警告のみ抑制する。
+@preconcurrency import Vision
 import UIKit
 #endif
 
