@@ -21,12 +21,26 @@
 	<key>NSUserTrackingUsageDescription</key>
 	<string>アプリを無料で提供し続けるため、あなたに関連性の高い広告を表示する目的で使用します。許可しなくてもすべての機能をご利用いただけます。</string>
 
-	<!--
-	  ヘルスケアの読み取り理由。書き込みは行わないため
-	  NSHealthUpdateUsageDescription は不要です。
-	-->
+	<!-- ヘルスケアの読み取り理由。 -->
 	<key>NSHealthShareUsageDescription</key>
 	<string>体重・体脂肪率・睡眠時間を読み込み、手入力なしで記録を続けられるようにします。読み込んだデータは端末内にのみ保存され、外部へ送信されることはありません。</string>
+
+	<!--
+	  書き込みは行いません（requestAuthorization の toShare は空）が、
+	  HealthKit の entitlement は読み取りと書き込みを区別しないため、
+	  この文字列がないとアップロードが ITMS-90683 で弾かれます。
+	  実態に反する説明は書かず、書き込まない旨をそのまま記載しています。
+	-->
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>PhysLog はヘルスケアへデータを書き込みません。体重・体脂肪率・睡眠時間の読み込みのみを行います。</string>
+
+	<!--
+	  PhotosPicker 自体は許可不要ですが、PhotosUI をリンクすると
+	  Photos.framework の参照が入り、同じチェックに引っかかる可能性があるため
+	  予防的に記載しています。
+	-->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>体組成計の結果用紙やアプリ画面のスクリーンショットを読み取り、測定値を自動で入力するために使用します。画像は端末内で処理され、外部へ送信されることはありません。</string>
 
 	<!--
 	  SKAdNetwork（広告効果測定）の識別子。最低限 Google の識別子が必要です。
