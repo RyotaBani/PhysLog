@@ -129,7 +129,5 @@ if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out = os.path.join(root, "PhysLog/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png")
     icon = build()
-    # 内容が同じなら毎回同一バイトになるよう、付随情報を書き込まない。
-    # そうしないと再生成のたびに git 差分が出る。
-    icon.save(out, "PNG", optimize=True)
+    icon.save(out, "PNG")
     print("saved:", out, icon.size, icon.mode)

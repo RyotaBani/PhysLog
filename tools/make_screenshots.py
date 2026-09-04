@@ -596,8 +596,7 @@ if __name__ == "__main__":
         s = fn()
         img = compose(s, head, sub, acc)
         path = f"{out}/{i:02d}_appstore_1320x2868.png"
-        # 再生成しても内容が同じならバイト差分が出ないようにする
-        img.save(path, "PNG", optimize=True)
+        img.save(path, "PNG")
         print(f"saved {path}  {img.size}")
         # 目視確認用の縮小版が必要なら以下を有効化
         # img.resize((330, 717), Image.LANCZOS).save(f"{out}/preview_{i}.png")
