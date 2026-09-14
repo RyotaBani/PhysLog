@@ -60,9 +60,15 @@ struct TrainingSessionRow: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(session.displayTitle)
                             .font(.subheadline.weight(.semibold))
-                        Text("\(session.date.shortJP)（\(session.date.weekdayJP)）")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            Text("\(session.date.shortJP)（\(session.date.weekdayJP)）")
+                            if !session.gymName.isEmpty {
+                                Text("・")
+                                Text(session.gymName)
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
                     Spacer()
                     if session.totalVolume > 0 {
@@ -128,6 +134,14 @@ struct TrainingEditor: View {
     @State private var memo = ""
     @State private var drafts: [ExerciseDraft] = [ExerciseDraft()]
     @State private var pickerTarget: UUID? = nil
+    @State private var gymName = ""
+
+    @Query(sort: \Gym.createdAt) private var gyms: [Gym]
+
+    /// 選択中のジム。候補の生成に使う。
+    private var selectedGym: Gym? {
+        gyms.first { $0.name == gymName }
+    }
 
     private var canSave: Bool {
         drafts.contains { !$0.isEmpty }
@@ -152,11 +166,20 @@ struct TrainingEditor: View {
                     Picker("種別", selection: $sport) {
                         ForEach(ExerciseLibrary.sports, id: \.self) { Text($0).tag($0) }
                     }
+
+                    if !gyms.isEmpty {
+                        Picker("場所", selection: $gymName) {
+                            Text("指定しない").tag("")
+                            ForEach(gyms) { gym in
+                                Text(gym.name).tag(gym.name)
+                            }
+                        }
+                    }
                 }
 
                 Section {
                     ForEach($drafts) { $draft in
-                        ExerciseDraftRow(draft: $draft) {
+                        ExerciseDraftRow(draft: $draft, gym: selectedGym) {
                             pickerTarget = draft.id
                         }
                     }
@@ -215,7 +238,13 @@ struct TrainingEditor: View {
     }
 
     private func load() {
-        guard let session else { return }
+        guard let session else {
+            // 新規作成時は既定のジムを初期値にする。
+            // 毎回選び直すのは手間なので、普段の場所が自動で入るようにしている。
+            gymName = gyms.first(where: { $0.isDefault })?.name ?? ""
+            return
+        }
+        gymName = session.gymName
         date = session.date
         sport = ExerciseLibrary.sports.contains(session.sport) ? session.sport : "その他"
         memo = session.memo
@@ -243,8 +272,9 @@ struct TrainingEditor: View {
             target.date = date
             target.sport = sport
             target.memo = memo
+            target.gymName = gymName
         } else {
-            target = TrainingSession(date: date, sport: sport, memo: memo)
+            target = TrainingSession(date: date, sport: sport, memo: memo, gymName: gymName)
             context.insert(target)
         }
 
@@ -267,7 +297,43 @@ struct TrainingEditor: View {
 
 struct ExerciseDraftRow: View {
     @Binding var draft: ExerciseDraft
+    /// 選択中のジム。候補チップの生成に使う。nil なら候補は出ない。
+    var gym: Gym? = nil
     let onPickerTap: () -> Void
+
+    /// 種目名から、バーベル種目かダンベル種目かを推測する。
+    /// 完全な判定は難しいので、候補を出す手がかりに使うだけ。
+    /// 外れても自由入力できるので実害はない。
+    private var weightCandidates: [Double] {
+        guard let gym else { return [] }
+        let name = draft.name
+        guard !name.isEmpty else { return [] }
+
+        if name.contains("ダンベル") || name.localizedCaseInsensitiveContains("dumbbell") {
+            return gym.dumbbellWeightList()
+        }
+        // バーベル種目とみなせるもの
+        let barbellKeywords = ["ベンチプレス", "スクワット", "デッドリフト", "ロウ",
+                               "カール", "プレス", "クリーン", "バーベル"]
+        if barbellKeywords.contains(where: { name.contains($0) }) {
+            return gym.barbellWeights(maxWeight: 250)
+        }
+        return []
+    }
+
+    /// いま入力されている値の近くだけ見せる。
+    /// 全候補を出すと数十件になり、探すほうが手間になるため。
+    private var nearbyCandidates: [Double] {
+        let all = weightCandidates
+        guard !all.isEmpty else { return [] }
+
+        if let current = Double(draft.weight), current > 0 {
+            let sorted = all.sorted { abs($0 - current) < abs($1 - current) }
+            return Array(sorted.prefix(7)).sorted()
+        }
+        // 未入力なら軽いほうから
+        return Array(all.prefix(7))
+    }
 
     var body: some View {
         VStack(spacing: 10) {
@@ -288,9 +354,44 @@ struct ExerciseDraftRow: View {
                 Text("×").font(.caption).foregroundStyle(.tertiary)
                 CompactField(caption: "セット", placeholder: "set", text: $draft.sets)
             }
+
+            // そのジムで作れる重量を候補として出す。
+            // タップで入るが、手入力もそのままできる（他店舗で借りた、
+            // 自前のプレートを使ったなどの例外に対応するため）。
+            if !nearbyCandidates.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(nearbyCandidates, id: \.self) { w in
+                            Button {
+                                draft.weight = fmt(w)
+                            } label: {
+                                Text(fmt(w))
+                                    .font(.caption.weight(.medium))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(
+                                        Double(draft.weight) == w
+                                            ? Color.physlogOrange
+                                            : Color(.tertiarySystemFill),
+                                        in: Capsule()
+                                    )
+                                    .foregroundStyle(
+                                        Double(draft.weight) == w ? .white : Color.primary
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                }
+            }
         }
         .padding(.vertical, 4)
     }
+}
+
+private func fmt(_ v: Double) -> String {
+    v == v.rounded() ? String(Int(v)) : String(format: "%g", v)
 }
 
 struct CompactField: View {

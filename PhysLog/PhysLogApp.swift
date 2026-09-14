@@ -15,7 +15,8 @@ struct PhysLogApp: App {
             PhysicalAbility.self,
             TrainingSession.self,
             TrainingSet.self,
-            ConditionRecord.self
+            ConditionRecord.self,
+            Gym.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {

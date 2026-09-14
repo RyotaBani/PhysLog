@@ -9,13 +9,19 @@ final class TrainingSession {
     var sport: String = ""
     var memo: String = ""
 
+    /// トレーニングした場所。
+    /// Gym への参照ではなく名前で持つ。ジム登録を消しても
+    /// 過去の記録が壊れないようにするため。
+    var gymName: String = ""
+
     @Relationship(deleteRule: .cascade, inverse: \TrainingSet.session)
     var exercises: [TrainingSet]? = []
 
-    init(date: Date = Date(), sport: String = "", memo: String = "") {
+    init(date: Date = Date(), sport: String = "", memo: String = "", gymName: String = "") {
         self.date = date
         self.sport = sport
         self.memo = memo
+        self.gymName = gymName
         self.exercises = []
     }
 

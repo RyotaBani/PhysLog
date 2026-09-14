@@ -62,6 +62,23 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink {
+                        GymListView()
+                    } label: {
+                        Label {
+                            Text("ジム")
+                        } icon: {
+                            Image(systemName: "building.2.fill")
+                                .foregroundStyle(Color.physlogOrange)
+                        }
+                    }
+                } header: {
+                    Text("トレーニング場所")
+                } footer: {
+                    Text("バーの重さやプレートの刻みを登録しておくと、記録するときに、そのジムで実際に作れる重量が候補として出ます。")
+                }
+
+                Section {
                     switch health.status {
                     case .unavailable:
                         Label("この端末はヘルスケアに対応していません", systemImage: "heart.slash")

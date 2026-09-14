@@ -49,6 +49,27 @@ enum SampleData {
             }
         }
 
+        // ── ジム（2箇所。器具構成の違いを見せる）────────────
+        let mainGym = Gym(
+            name: "メインジム",
+            memo: "平日夜に利用",
+            isDefault: true,
+            barWeights: [20, 15],
+            plateWeights: [1.25, 2.5, 5, 10, 15, 20],
+            dumbbellMin: 1, dumbbellMax: 40, dumbbellStep: 1
+        )
+        context.insert(mainGym)
+
+        let subGym = Gym(
+            name: "出張先のジム",
+            memo: "1.25kgプレートなし・マシンはlb表記",
+            barWeights: [20],
+            plateWeights: [2.5, 5, 10, 20],
+            dumbbellMin: 2, dumbbellMax: 30, dumbbellStep: 2,
+            machineUnit: .pound
+        )
+        context.insert(subGym)
+
         // ── トレーニング（週3回・8週分）──────────────────
         let routines: [(String, [(String, Double, Int, Int)])] = [
             ("ウェイトトレーニング", [
@@ -76,7 +97,9 @@ enum SampleData {
                 let daysAgo = week * 7 + dayOffset * 2
                 guard let date = cal.date(byAdding: .day, value: -daysAgo, to: today) else { continue }
 
-                let session = TrainingSession(date: date, sport: routine.0)
+                // たまに別のジムで記録したことにして、場所の違いが分かるようにする
+                let gymName = (week % 4 == 1) ? subGym.name : mainGym.name
+                let session = TrainingSession(date: date, sport: routine.0, gymName: gymName)
                 context.insert(session)
 
                 let progressBonus = Double(7 - week) * 1.25
@@ -116,6 +139,7 @@ enum SampleData {
         try? context.delete(model: BodyMeasurement.self)
         try? context.delete(model: PhysicalAbility.self)
         try? context.delete(model: ConditionRecord.self)
+        try? context.delete(model: Gym.self)
         try? context.save()
     }
 }
