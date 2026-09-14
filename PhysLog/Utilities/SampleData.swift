@@ -104,15 +104,35 @@ enum SampleData {
 
                 let progressBonus = Double(7 - week) * 1.25
                 for (i, item) in routine.1.enumerated() {
-                    let set = TrainingSet(
-                        exercise: item.0,
-                        weight: item.1 + progressBonus,
-                        reps: item.2,
-                        sets: item.3,
-                        order: i
-                    )
+                    let set = TrainingSet(exercise: item.0, order: i)
                     set.session = session
                     context.insert(set)
+
+                    // 主要種目はウォームアップから本番へ上げていく形にして、
+                    // セットごとに重量が変わる記録の見え方を確認できるようにする
+                    let topWeight = item.1 + progressBonus
+                    let isMainLift = ["ベンチプレス", "スクワット", "デッドリフト"]
+                        .contains(where: { item.0.contains($0) })
+
+                    if isMainLift && item.3 >= 3 {
+                        let plan: [(Double, Int)] = [
+                            ((topWeight * 0.5 / 2.5).rounded() * 2.5, item.2 + 4),
+                            ((topWeight * 0.75 / 2.5).rounded() * 2.5, item.2 + 2),
+                            (topWeight, item.2),
+                            (topWeight, item.2)
+                        ]
+                        for (j, entry) in plan.prefix(item.3).enumerated() {
+                            let e = SetEntry(weight: entry.0, reps: entry.1, order: j)
+                            e.exerciseSet = set
+                            context.insert(e)
+                        }
+                    } else {
+                        for j in 0..<item.3 {
+                            let e = SetEntry(weight: topWeight, reps: item.2, order: j)
+                            e.exerciseSet = set
+                            context.insert(e)
+                        }
+                    }
                 }
             }
         }
@@ -140,6 +160,7 @@ enum SampleData {
         try? context.delete(model: PhysicalAbility.self)
         try? context.delete(model: ConditionRecord.self)
         try? context.delete(model: Gym.self)
+        try? context.delete(model: SetEntry.self)
         try? context.save()
     }
 }

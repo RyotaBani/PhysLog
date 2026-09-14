@@ -15,6 +15,7 @@ struct PhysLogApp: App {
             PhysicalAbility.self,
             TrainingSession.self,
             TrainingSet.self,
+            SetEntry.self,
             ConditionRecord.self,
             Gym.self
         ])

@@ -7,6 +7,8 @@ struct TrainingListView: View {
 
     @State private var editing: TrainingSession? = nil
     @State private var isAdding = false
+    /// 「この記録をもとに作成」で選ばれた元の記録
+    @State private var duplicating: TrainingSession? = nil
 
     var body: some View {
         Group {
@@ -14,7 +16,7 @@ struct TrainingListView: View {
                 EmptyStateView(
                     icon: "dumbbell",
                     title: "トレーニングの記録がありません",
-                    message: "種目・重量・回数・セット数を記録すると、\n総挙上量が自動で計算されます"
+                    message: "セットごとに重量を変えて記録できます。\n総挙上量は自動で計算されます"
                 )
             } else {
                 List {
@@ -28,6 +30,14 @@ struct TrainingListView: View {
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
+                        .contextMenu {
+                            // 同じメニューを繰り返す日に、種目と回数を打ち直さずに済む
+                            Button {
+                                duplicating = session
+                            } label: {
+                                Label("この記録をもとに作成", systemImage: "doc.on.doc")
+                            }
+                        }
                     }
                     .onDelete { offsets in
                         for index in offsets { context.delete(sessions[index]) }
@@ -44,6 +54,9 @@ struct TrainingListView: View {
         }
         .sheet(item: $editing) { session in
             TrainingEditor(session: session)
+        }
+        .sheet(item: $duplicating) { session in
+            TrainingEditor(session: nil, basedOn: session)
         }
     }
 }
@@ -111,14 +124,31 @@ struct TrainingSessionRow: View {
 
 // MARK: - 編集用の一時データ
 
+struct SetDraft: Identifiable {
+    let id = UUID()
+    var weight: String = ""
+    var reps: String = ""
+
+    var isEmpty: Bool {
+        weight.trimmingCharacters(in: .whitespaces).isEmpty
+            && reps.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+}
+
 struct ExerciseDraft: Identifiable {
     let id = UUID()
     var name: String = ""
-    var weight: String = ""
-    var reps: String = ""
-    var sets: String = ""
+    var sets: [SetDraft] = [SetDraft()]
 
     var isEmpty: Bool { name.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// この種目の挙上量
+    var volume: Double {
+        sets.reduce(0) { sum, set in
+            guard let w = Double(set.weight), let r = Int(set.reps) else { return sum }
+            return sum + w * Double(r)
+        }
+    }
 }
 
 // MARK: - 追加・編集
@@ -128,6 +158,8 @@ struct TrainingEditor: View {
     @Environment(\.dismiss) private var dismiss
 
     let session: TrainingSession?
+    /// 内容をコピーする元の記録。新規作成のときだけ使う。
+    var basedOn: TrainingSession? = nil
 
     @State private var date = Date()
     @State private var sport = "ウェイトトレーニング"
@@ -148,12 +180,7 @@ struct TrainingEditor: View {
     }
 
     private var estimatedVolume: Double {
-        drafts.reduce(0) { sum, draft in
-            guard let w = Double(draft.weight),
-                  let r = Int(draft.reps),
-                  let s = Int(draft.sets) else { return sum }
-            return sum + w * Double(r) * Double(s)
-        }
+        drafts.reduce(0) { $0 + $1.volume }
     }
 
     var body: some View {
@@ -242,6 +269,14 @@ struct TrainingEditor: View {
             // 新規作成時は既定のジムを初期値にする。
             // 毎回選び直すのは手間なので、普段の場所が自動で入るようにしている。
             gymName = gyms.first(where: { $0.isDefault })?.name ?? ""
+
+            // 「この記録をもとに作成」の場合、種目と重量を引き継ぐ。
+            // 日付だけ今日にして、重量を直せばすぐ保存できる。
+            if let basedOn {
+                sport = ExerciseLibrary.sports.contains(basedOn.sport) ? basedOn.sport : "その他"
+                gymName = basedOn.gymName
+                drafts = Self.makeDrafts(from: basedOn)
+            }
             return
         }
         gymName = session.gymName
@@ -249,15 +284,7 @@ struct TrainingEditor: View {
         sport = ExerciseLibrary.sports.contains(session.sport) ? session.sport : "その他"
         memo = session.memo
 
-        let existing = session.sortedExercises.map { set in
-            ExerciseDraft(
-                name: set.exercise,
-                weight: set.weight.map { String($0) } ?? "",
-                reps: set.reps.map { String($0) } ?? "",
-                sets: set.sets.map { String($0) } ?? ""
-            )
-        }
-        drafts = existing.isEmpty ? [ExerciseDraft()] : existing
+        drafts = Self.makeDrafts(from: session)
     }
 
     private func save() {
@@ -281,15 +308,43 @@ struct TrainingEditor: View {
         for (index, draft) in drafts.enumerated() where !draft.isEmpty {
             let set = TrainingSet(
                 exercise: draft.name.trimmingCharacters(in: .whitespaces),
-                weight: Double(draft.weight),
-                reps: Int(draft.reps),
-                sets: Int(draft.sets),
                 order: index
             )
             set.session = target
             context.insert(set)
+
+            // セットごとに1件ずつ作る。
+            // 旧フィールド（weight / reps / sets）は使わない。
+            for (setIndex, setDraft) in draft.sets.enumerated() where !setDraft.isEmpty {
+                let entry = SetEntry(
+                    weight: Double(setDraft.weight),
+                    reps: Int(setDraft.reps),
+                    order: setIndex
+                )
+                entry.exerciseSet = set
+                context.insert(entry)
+            }
         }
         dismiss()
+    }
+
+    /// 既存の記録から入力用の下書きを作る。
+    /// 「前回から作成」でも使うので、型メソッドに切り出している。
+    static func makeDrafts(from session: TrainingSession) -> [ExerciseDraft] {
+        let existing = session.sortedExercises.map { set -> ExerciseDraft in
+            var draft = ExerciseDraft(name: set.exercise)
+            let resolved = set.resolvedSets
+            draft.sets = resolved.isEmpty
+                ? [SetDraft()]
+                : resolved.map { entry in
+                    var sd = SetDraft()
+                    sd.weight = entry.weight.map { fmt($0) } ?? ""
+                    sd.reps = entry.reps.map { String($0) } ?? ""
+                    return sd
+                }
+            return draft
+        }
+        return existing.isEmpty ? [ExerciseDraft()] : existing
     }
 }
 
@@ -323,16 +378,15 @@ struct ExerciseDraftRow: View {
 
     /// いま入力されている値の近くだけ見せる。
     /// 全候補を出すと数十件になり、探すほうが手間になるため。
-    private var nearbyCandidates: [Double] {
+    private func nearbyCandidates(for current: String) -> [Double]? {
         let all = weightCandidates
-        guard !all.isEmpty else { return [] }
+        guard !all.isEmpty else { return nil }
 
-        if let current = Double(draft.weight), current > 0 {
-            let sorted = all.sorted { abs($0 - current) < abs($1 - current) }
-            return Array(sorted.prefix(7)).sorted()
+        if let value = Double(current), value > 0 {
+            let sorted = all.sorted { abs($0 - value) < abs($1 - value) }
+            return Array(sorted.prefix(6)).sorted()
         }
-        // 未入力なら軽いほうから
-        return Array(all.prefix(7))
+        return Array(all.prefix(6))
     }
 
     var body: some View {
@@ -347,46 +401,112 @@ struct ExerciseDraftRow: View {
                 .buttonStyle(.plain)
             }
 
-            HStack(spacing: 8) {
-                CompactField(caption: "重量", placeholder: "kg", text: $draft.weight)
-                Text("×").font(.caption).foregroundStyle(.tertiary)
-                CompactField(caption: "回数", placeholder: "回", text: $draft.reps)
-                Text("×").font(.caption).foregroundStyle(.tertiary)
-                CompactField(caption: "セット", placeholder: "set", text: $draft.sets)
-            }
+            // セットごとに重量を持つ。
+            // ウォームアップから本番へ上げていく記録に対応するため。
+            ForEach(Array($draft.sets.enumerated()), id: \.element.id) { index, $set in
+                VStack(spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text("\(index + 1)")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 16)
 
-            // そのジムで作れる重量を候補として出す。
-            // タップで入るが、手入力もそのままできる（他店舗で借りた、
-            // 自前のプレートを使ったなどの例外に対応するため）。
-            if !nearbyCandidates.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(nearbyCandidates, id: \.self) { w in
+                        CompactField(caption: index == 0 ? "重量" : "",
+                                     placeholder: "kg", text: $set.weight)
+                        Text("×").font(.caption).foregroundStyle(.tertiary)
+                            .padding(.top, index == 0 ? 14 : 0)
+                        CompactField(caption: index == 0 ? "回数" : "",
+                                     placeholder: "回", text: $set.reps)
+
+                        // 同じ内容をもう1セット足す。
+                        // 「60kg×10を3セット」のような繰り返しを、
+                        // 打ち直さずに増やせるようにしている。
+                        Button {
+                            duplicate(at: index)
+                        } label: {
+                            Image(systemName: "plus.square.on.square")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.physlogOrange)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, index == 0 ? 14 : 0)
+
+                        if draft.sets.count > 1 {
                             Button {
-                                draft.weight = fmt(w)
+                                draft.sets.remove(at: index)
                             } label: {
-                                Text(fmt(w))
-                                    .font(.caption.weight(.medium))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(
-                                        Double(draft.weight) == w
-                                            ? Color.physlogOrange
-                                            : Color(.tertiarySystemFill),
-                                        in: Capsule()
-                                    )
-                                    .foregroundStyle(
-                                        Double(draft.weight) == w ? .white : Color.primary
-                                    )
+                                Image(systemName: "minus.circle")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.tertiary)
                             }
                             .buttonStyle(.plain)
+                            .padding(.top, index == 0 ? 14 : 0)
                         }
                     }
-                    .padding(.horizontal, 2)
+
+                    // そのジムで作れる重量を候補として出す。
+                    // タップで入るが、手入力もそのままできる（他店舗で借りた、
+                    // 自前のプレートを使ったなどの例外に対応するため）。
+                    if let candidates = nearbyCandidates(for: set.weight), !candidates.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(candidates, id: \.self) { w in
+                                    Button {
+                                        set.weight = fmt(w)
+                                    } label: {
+                                        Text(fmt(w))
+                                            .font(.caption2.weight(.medium))
+                                            .padding(.horizontal, 9)
+                                            .padding(.vertical, 4)
+                                            .background(
+                                                Double(set.weight) == w
+                                                    ? Color.physlogOrange
+                                                    : Color(.tertiarySystemFill),
+                                                in: Capsule()
+                                            )
+                                            .foregroundStyle(
+                                                Double(set.weight) == w ? .white : Color.primary
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.leading, 24)
+                        }
+                    }
+                }
+            }
+
+            HStack {
+                Button {
+                    draft.sets.append(SetDraft())
+                } label: {
+                    Label("セットを追加", systemImage: "plus.circle")
+                        .font(.caption)
+                        .foregroundStyle(Color.physlogOrange)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                if draft.volume > 0 {
+                    Text("\(Int(draft.volume).formatted()) kg")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
             }
         }
         .padding(.vertical, 4)
+    }
+
+    /// 直前のセットと同じ内容を1本足す
+    private func duplicate(at index: Int) {
+        guard draft.sets.indices.contains(index) else { return }
+        let source = draft.sets[index]
+        var copy = SetDraft()
+        copy.weight = source.weight
+        copy.reps = source.reps
+        draft.sets.insert(copy, at: index + 1)
     }
 }
 
