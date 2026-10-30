@@ -7,6 +7,7 @@ struct ConditionListView: View {
 
     @State private var editing: ConditionRecord? = nil
     @State private var isAdding = false
+    @State private var sharing: ConditionRecord? = nil
 
     var body: some View {
         Group {
@@ -28,6 +29,22 @@ struct ConditionListView: View {
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
+                        // 左スワイプで、その日の記録をまとめて共有できる
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                sharing = record
+                            } label: {
+                                Label("共有", systemImage: "square.and.arrow.up")
+                            }
+                            .tint(.physlogPrimary)
+                        }
+                        .contextMenu {
+                            Button {
+                                sharing = record
+                            } label: {
+                                Label("共有用にまとめる", systemImage: "square.and.arrow.up")
+                            }
+                        }
                     }
                     .onDelete { offsets in
                         for index in offsets { context.delete(records[index]) }
@@ -44,6 +61,9 @@ struct ConditionListView: View {
         }
         .sheet(item: $editing) { record in
             ConditionEditor(record: record)
+        }
+        .sheet(item: $sharing) { record in
+            ConditionShareView(record: record)
         }
     }
 }
@@ -93,6 +113,18 @@ struct ConditionRow: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+
+                if !record.questions.isEmpty {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "bubble.left.and.text.bubble.right.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color.physlogPrimary)
+                        Text(record.questions)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
     }
@@ -133,9 +165,10 @@ struct ConditionEditor: View {
     @State private var fatigue: Int? = nil
     @State private var condition: Int? = nil
     @State private var memo = ""
+    @State private var questions = ""
 
     private var canSave: Bool {
-        !sleep.isEmpty || fatigue != nil || condition != nil
+        !sleep.isEmpty || fatigue != nil || condition != nil || !questions.isEmpty
     }
 
     var body: some View {
@@ -178,6 +211,15 @@ struct ConditionEditor: View {
                     TextField("気になる症状・生活の変化など", text: $memo, axis: .vertical)
                         .lineLimit(2...5)
                 }
+
+                Section {
+                    TextField("例：練習後の膝の違和感について相談したい", text: $questions, axis: .vertical)
+                        .lineLimit(2...5)
+                } header: {
+                    Text("次に聞きたいこと")
+                } footer: {
+                    Text("トレーナーや医師に相談したいことをメモしておくと、記録と一緒にまとめて共有できます")
+                }
             }
             .navigationTitle(record == nil ? "コンディションを記録" : "記録を編集")
             .navigationBarTitleDisplayMode(.inline)
@@ -202,6 +244,7 @@ struct ConditionEditor: View {
         fatigue = record.fatigue
         condition = record.condition
         memo = record.memo
+        questions = record.questions
     }
 
     private func save() {
@@ -211,13 +254,15 @@ struct ConditionEditor: View {
             record.fatigue = fatigue
             record.condition = condition
             record.memo = memo
+            record.questions = questions
         } else {
             context.insert(ConditionRecord(
                 date: date,
                 sleepHours: Double(sleep),
                 fatigue: fatigue,
                 condition: condition,
-                memo: memo
+                memo: memo,
+                questions: questions
             ))
         }
         dismiss()
