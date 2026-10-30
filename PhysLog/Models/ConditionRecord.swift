@@ -8,6 +8,10 @@ final class ConditionRecord {
     var fatigue: Int?     // 1 = ほぼなし … 5 = 非常に高い
     var condition: Int?   // 1 = 最高 … 5 = 不調
     var memo: String = ""
+    /// トレーナーや医師に「次に聞きたいこと」。その日の記録に紐づくメモとして持つ。
+    /// デフォルト値つきの追加なので、SwiftData の自動マイグレーションで
+    /// 既存データを壊さずに移行できる（手動の Migration Plan は不要）。
+    var questions: String = ""
     /// ヘルスケアから睡眠を取り込んだ日を表すキー（yyyy-MM-dd）。重複防止用。
     var externalID: String?
 
@@ -17,6 +21,7 @@ final class ConditionRecord {
         fatigue: Int? = nil,
         condition: Int? = nil,
         memo: String = "",
+        questions: String = "",
         externalID: String? = nil
     ) {
         self.date = date
@@ -24,6 +29,7 @@ final class ConditionRecord {
         self.fatigue = fatigue
         self.condition = condition
         self.memo = memo
+        self.questions = questions
         self.externalID = externalID
     }
 
