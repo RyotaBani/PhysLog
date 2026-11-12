@@ -36,9 +36,17 @@ function load(): AppData {
     const seed = SEED as Partial<AppData>
     const pick = <T extends { id: string }>(l: T[] = []) => l.filter((x) => !done.has(x.id))
     const fresh = { members: seed.members, sessions: pick(seed.sessions), bodies: pick(seed.bodies), abilities: pick(seed.abilities), conditions: pick(seed.conditions) }
+    // 既に入れたセッションに後から足した種目は、種目単位で追記する
+    const sessions = base.sessions.map((s) => {
+      const src = seed.sessions?.find((x) => x.id === s.id)
+      if (!src) return s
+      const add = src.exercises.filter((e) => !done.has(e.id) && !s.exercises.some((x) => x.id === e.id))
+      return add.length ? { ...s, exercises: [...s.exercises, ...add] } : s
+    })
     ;[fresh.sessions, fresh.bodies, fresh.abilities, fresh.conditions].forEach((l) => l.forEach((x) => done.add(x.id)))
+    seed.sessions?.forEach((x) => x.exercises.forEach((e) => done.add(e.id)))
     localStorage.setItem(SEEDED, JSON.stringify([...done]))
-    return mergeInto(base, fresh)
+    return mergeInto({ ...base, sessions }, fresh)
   } catch {
     return empty()
   }
