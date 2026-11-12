@@ -3,6 +3,7 @@ import { actions, uid, useData } from '../store'
 import type { BodyMeasurement, ConditionRecord, PhysicalAbility, TrainingSession } from '../types'
 import { DateNav, Scale, toast } from '../components/ui'
 import { AbilityForm, BodyForm, ConditionForm, TrainingForm } from '../forms/Forms'
+import { TextImport } from '../forms/TextImport'
 import { CONDITION_COLORS, abilityIcon, isLowerBetter } from '../lib/presets'
 import { addDays, num, sessionVolume, setsSummary, todayKey } from '../lib/format'
 
@@ -11,10 +12,12 @@ export type Editing =
   | { kind: 'condition'; date: string; item?: ConditionRecord }
   | { kind: 'ability'; date: string; item?: PhysicalAbility }
   | { kind: 'training'; date: string; item?: TrainingSession }
+  | { kind: 'text' }
 
 export function EditorHost(props: { editing: Editing | null; onClose: () => void }) {
   const e = props.editing
   if (!e) return null
+  if (e.kind === 'text') return <TextImport onClose={props.onClose} />
   const p = { date: e.date, onClose: props.onClose }
   switch (e.kind) {
     case 'body': return <BodyForm {...p} existing={e.item} />
@@ -64,9 +67,14 @@ export function Today(props: { onEdit: (e: Editing) => void }) {
 
   return (
     <div className="wrap">
-      <div className="row" style={{ justifyContent: 'center', marginBottom: 14 }}>
+      <div className="row" style={{ justifyContent: 'center', marginBottom: 12 }}>
         <DateNav value={date} onChange={setDate} />
       </div>
+      <button className="btn block" style={{ marginBottom: 12, background: 'var(--card)', justifyContent: 'flex-start', gap: 10 }} onClick={() => props.onEdit({ kind: 'text' })}>
+        <span style={{ fontSize: 18 }}>📝</span>
+        <span className="grow" style={{ textAlign: 'left' }}>テキストで入力<span className="sub" style={{ display: 'block', fontWeight: 500 }}>「BSQ 60kg 5 3」のように書いて・貼り付けて取り込む</span></span>
+        <span className="muted">›</span>
+      </button>
 
       <div className="grid3" style={{ marginBottom: 12 }}>
         <div className="card stat" style={{ margin: 0 }}>

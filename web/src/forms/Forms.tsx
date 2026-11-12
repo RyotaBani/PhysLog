@@ -3,7 +3,7 @@ import { actions, uid, useData } from '../store'
 import type {
   BodyMeasurement, ConditionRecord, ExerciseLog, PhysicalAbility, TrainingSession,
 } from '../types'
-import { Scale, Sheet, Stepper, UnitInput, toast } from '../components/ui'
+import { DateField, Scale, Sheet, Stepper, UnitInput, toast } from '../components/ui'
 import {
   ABILITY_PRESETS, CONDITION_COLORS, EXERCISES, SPORTS, abilityIcon, findAbility, isLowerBetter, resolveAlias,
 } from '../lib/presets'
@@ -16,10 +16,11 @@ const byDateDesc = <T extends { date: string }>(a: T, b: T) => b.date.localeComp
 // 身体測定
 // ─────────────────────────────────────────────
 export function BodyForm(props: { date: string; existing?: BodyMeasurement; onClose: () => void }) {
+  const [date, setDate] = useState(props.date)
   const { bodies } = useData()
   const prev = useMemo(
-    () => [...bodies].filter((b) => b.date < props.date || (b.date === props.date && b.id !== props.existing?.id)).sort(byDateDesc)[0],
-    [bodies, props.date, props.existing],
+    () => [...bodies].filter((b) => b.date < date || (b.date === date && b.id !== props.existing?.id)).sort(byDateDesc)[0],
+    [bodies, date, props.existing],
   )
   const e = props.existing
   const [w, setW] = useState(str(e?.weight))
@@ -28,18 +29,19 @@ export function BodyForm(props: { date: string; existing?: BodyMeasurement; onCl
   const [memo, setMemo] = useState(e?.memo ?? '')
   const ok = [w, f, m].some((x) => parseNum(x) != null)
   const save = () => {
-    actions.saveBody({ id: e?.id ?? uid(), date: props.date, weight: parseNum(w), bodyFat: parseNum(f), muscle: parseNum(m), memo })
+    actions.saveBody({ id: e?.id ?? uid(), date: date, weight: parseNum(w), bodyFat: parseNum(f), muscle: parseNum(m), memo })
     toast('身体測定を保存しました')
     props.onClose()
   }
   return (
     <Sheet
-      title={`身体測定・${labelDate(props.date)}`}
+      title={`身体測定・${labelDate(date)}`}
       onClose={props.onClose}
       onSave={save}
       canSave={ok}
       onDelete={e ? () => { actions.remove('bodies', e.id); props.onClose() } : undefined}
     >
+      <DateField value={date} onChange={setDate} />
       <label className="label">体重</label>
       <UnitInput value={w} onChange={setW} unit="kg" placeholder={prev?.weight ? `前回 ${prev.weight}` : '例 70.5'} autoFocus />
       <div className="grid2">
@@ -62,6 +64,7 @@ export function BodyForm(props: { date: string; existing?: BodyMeasurement; onCl
 // コンディション
 // ─────────────────────────────────────────────
 export function ConditionForm(props: { date: string; existing?: ConditionRecord; onClose: () => void }) {
+  const [date, setDate] = useState(props.date)
   const e = props.existing
   const [sleep, setSleep] = useState(str(e?.sleep))
   const [fatigue, setFatigue] = useState(e?.fatigue)
@@ -69,18 +72,19 @@ export function ConditionForm(props: { date: string; existing?: ConditionRecord;
   const [memo, setMemo] = useState(e?.memo ?? '')
   const ok = parseNum(sleep) != null || fatigue != null || cond != null || memo.trim() !== ''
   const save = () => {
-    actions.saveCondition({ id: e?.id ?? uid(), date: props.date, sleep: parseNum(sleep), fatigue, condition: cond, memo })
+    actions.saveCondition({ id: e?.id ?? uid(), date: date, sleep: parseNum(sleep), fatigue, condition: cond, memo })
     toast('コンディションを保存しました')
     props.onClose()
   }
   return (
     <Sheet
-      title={`コンディション・${labelDate(props.date)}`}
+      title={`コンディション・${labelDate(date)}`}
       onClose={props.onClose}
       onSave={save}
       canSave={ok}
       onDelete={e ? () => { actions.remove('conditions', e.id); props.onClose() } : undefined}
     >
+      <DateField value={date} onChange={setDate} />
       <label className="label">睡眠時間</label>
       <div className="chips" style={{ marginBottom: 8 }}>
         {[5, 6, 6.5, 7, 7.5, 8, 9].map((h) => (
@@ -102,6 +106,7 @@ export function ConditionForm(props: { date: string; existing?: ConditionRecord;
 // 身体能力
 // ─────────────────────────────────────────────
 export function AbilityForm(props: { date: string; existing?: PhysicalAbility; onClose: () => void }) {
+  const [date, setDate] = useState(props.date)
   const { abilities } = useData()
   const e = props.existing
   const recent = useMemo(() => {
@@ -129,18 +134,19 @@ export function AbilityForm(props: { date: string; existing?: PhysicalAbility; o
   const others = ABILITY_PRESETS.map((p) => p.name).filter((n) => !recent.includes(n))
   const ok = type.trim() !== '' && v != null
   const save = () => {
-    actions.saveAbility({ id: e?.id ?? uid(), date: props.date, type: type.trim(), value: v!, unit, memo })
+    actions.saveAbility({ id: e?.id ?? uid(), date: date, type: type.trim(), value: v!, unit, memo })
     toast(isPB ? '🎉 自己ベスト更新！' : '身体能力を保存しました')
     props.onClose()
   }
   return (
     <Sheet
-      title={`身体能力・${labelDate(props.date)}`}
+      title={`身体能力・${labelDate(date)}`}
       onClose={props.onClose}
       onSave={save}
       canSave={ok}
       onDelete={e ? () => { actions.remove('abilities', e.id); props.onClose() } : undefined}
     >
+      <DateField value={date} onChange={setDate} />
       <label className="label">種目</label>
       <div className="chips">
         {[...recent, ...others].map((n) => (
@@ -178,11 +184,12 @@ export function AbilityForm(props: { date: string; existing?: PhysicalAbility; o
 // トレーニング
 // ─────────────────────────────────────────────
 export function TrainingForm(props: { date: string; existing?: TrainingSession; onClose: () => void }) {
+  const [date, setDate] = useState(props.date)
   const { sessions, profile } = useData()
   const e = props.existing
   const past = useMemo(
-    () => [...sessions].filter((s) => s.id !== e?.id && s.date <= props.date).sort(byDateDesc),
-    [sessions, e, props.date],
+    () => [...sessions].filter((s) => s.id !== e?.id && s.date <= date).sort(byDateDesc),
+    [sessions, e, date],
   )
   const [sport, setSport] = useState(e?.sport ?? past[0]?.sport ?? (profile.sport || 'ウェイトトレーニング'))
   const [memo, setMemo] = useState(e?.memo ?? '')
@@ -215,7 +222,7 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
 
   const save = () => {
     const cleaned = exs.map((x) => ({ ...x, sets: x.sets.filter((s) => s.weight != null || s.reps != null) }))
-    actions.saveSession({ id: e?.id ?? uid(), date: props.date, sport, memo, exercises: cleaned })
+    actions.saveSession({ id: e?.id ?? uid(), date: date, sport, memo, exercises: cleaned })
     toast('トレーニングを保存しました')
     props.onClose()
   }
@@ -236,13 +243,14 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
 
   return (
     <Sheet
-      title={`トレーニング・${labelDate(props.date)}`}
+      title={`トレーニング・${labelDate(date)}`}
       onClose={props.onClose}
       onSave={save}
       canSave={ok}
       saveLabel={total > 0 ? `保存（総挙上量 ${Math.round(total).toLocaleString()}kg）` : '保存'}
       onDelete={e ? () => { actions.remove('sessions', e.id); props.onClose() } : undefined}
     >
+      <DateField value={date} onChange={setDate} />
       <div className="chips scroll" style={{ marginBottom: 12 }}>
         {SPORTS.map((s) => (
           <button key={s} className={'chip' + (sport === s ? ' on' : '')} onClick={() => setSport(s)}>{s}</button>

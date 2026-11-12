@@ -66,7 +66,11 @@ export function History(props: { onEdit: (e: Editing) => void }) {
       <div className="chips scroll" style={{ marginBottom: 10 }}>
         {FILTERS.map((f) => <button key={f.id} className={'chip' + (filter === f.id ? ' on' : '')} onClick={() => setFilter(f.id)}>{f.label}</button>)}
       </div>
-      <input placeholder="🔍 種目名・メモで検索" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 12 }} />
+      <div className="row" style={{ marginBottom: 12 }}>
+        <input placeholder="🔍 種目名・メモで検索" value={q} onChange={(e) => setQ(e.target.value)} />
+        <button className="btn sm" style={{ whiteSpace: 'nowrap' }} onClick={() => props.onEdit({ kind: 'text' })}>📝 メモから取り込む</button>
+      </div>
+      <p className="sub" style={{ margin: '-4px 4px 12px' }}>記録を押すと、日付も含めて直せます。</p>
       {groups.length === 0 && <div className="card empty">記録がありません</div>}
       {groups.slice(0, limit).map(([date, rows]) => (
         <div key={date} style={{ marginBottom: 14 }}>

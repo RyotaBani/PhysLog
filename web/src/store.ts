@@ -149,9 +149,9 @@ export const actions = {
   setProfile: (p: AppData['profile']) => commit({ ...state, profile: p }),
 
   setActiveMember: (id: string) => commit({ ...state, activeMemberId: id }),
-  addMember: (name: string): Member => {
+  addMember: (name: string, activate = true): Member => {
     const m = { id: uid(), name }
-    commit({ ...state, members: [...state.members, m], activeMemberId: m.id })
+    commit({ ...state, members: [...state.members, m], activeMemberId: activate ? m.id : state.activeMemberId })
     return m
   },
   renameMember: (id: string, name: string) =>

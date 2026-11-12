@@ -200,3 +200,13 @@ export function ConfirmButton(props: { label: string; confirmLabel: string; onCo
     </button>
   )
 }
+
+/** フォーム先頭の日付欄。履歴から開いたときに日付の付け間違いも直せる */
+export function DateField(props: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="row" style={{ marginBottom: 12 }}>
+      <span className="sub" style={{ fontWeight: 700 }}>日付</span>
+      <input type="date" value={props.value} max={todayKey()} onChange={(e) => e.target.value && props.onChange(e.target.value)} style={{ width: 'auto', padding: '6px 10px' }} />
+    </div>
+  )
+}
