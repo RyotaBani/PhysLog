@@ -93,6 +93,24 @@
               "reps": 5
             }
           ]
+        },
+        {
+          "id": "20261112-ryota-ohl",
+          "name": "オーバーヘッドランジ",
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 10
+            },
+            {
+              "weight": 33,
+              "reps": 10
+            },
+            {
+              "weight": 55,
+              "reps": 10
+            }
+          ]
         }
       ]
     },
@@ -176,6 +194,24 @@
             {
               "weight": 10,
               "reps": 5
+            }
+          ]
+        },
+        {
+          "id": "20261112-katsura-ohl",
+          "name": "オーバーヘッドランジ",
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 10
+            },
+            {
+              "weight": 33,
+              "reps": 10
+            },
+            {
+              "weight": 55,
+              "reps": 10
             }
           ]
         }

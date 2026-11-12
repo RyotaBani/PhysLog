@@ -69,7 +69,7 @@ export function resolveName(raw: string, known: string[]): { name: string; match
   const aliases: Record<string, string> = { ...EXERCISE_ALIASES, ...EXTRA_ALIASES }
   if (aliases[q]) return { name: aliases[q], match: 'alias' }
   // 部分一致（「スクワ」→スクワット など）。候補が1つに絞れるときだけ
-  const partial = dict.filter((n) => norm(n).includes(q) || (q.length >= 3 && q.includes(norm(n))))
+  const partial = dict.filter((n) => norm(n).includes(q))
   if (partial.length === 1) return { name: partial[0], match: 'fuzzy' }
   // 打ち間違い：編集距離が短いもの
   let best = '', bestD = Infinity
@@ -146,6 +146,11 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
   let date = opts.today
   let members: string[] = []
   let dumbbellPair = false
+  // 種目名だけの行のあとに続く「数字だけの行」は、その種目のセットとして足す
+  //   オーバーヘッドランジ
+  //   20 10 1
+  //   33 10 1
+  let open: ParsedExercise | null = null
   let k = 0
 
   const current = () => {
@@ -163,6 +168,7 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
     const d = parseDate(line, year)
     // 日付だけ（＋見出し語）の行
     if (d && !/\d+\s*(kg|rep|回|set|セット)/i.test(line)) {
+      open = null
       date = d
       continue
     }
@@ -176,6 +182,7 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
       const toks = line.split(/[,、・&＆\s]+|と(?=[A-Z一-鿿])/).map((t) => t.trim()).filter(Boolean)
       if (toks.length && toks.every(isMemberToken) && toks.every((t) => resolveName(t, opts.knownExercises).match !== 'exact')) {
         members = toks.map((t) => opts.memberNames.find((m) => norm(m) === norm(t)) ?? t)
+        open = null
         continue
       }
     }
@@ -192,10 +199,22 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
     if (!sets) {
       // 種目名だけの行は、数字なしの記録として残す（確認画面で入力できる）
       const r = resolveCombo(namePart, opts.knownExercises)
-      if (r.match === 'unknown') { ignored.push(line); continue }
-      current().exercises.push({ key: 'e' + k++, raw: line, name: r.name, match: r.match, sets: [] })
+      if (r.match === 'unknown' && namePart.length > 30) { ignored.push(line); continue }
+      open = { key: 'e' + k++, raw: line, name: r.name, match: r.match, sets: [] }
+      if (dumbbellPair) {
+        if (!open.name.startsWith('ダンベル')) open.name = 'ダンベル' + open.name
+        open.note = 'ダンベル2個（重量は片手）'
+        dumbbellPair = false
+      }
+      current().exercises.push(open)
       continue
     }
+    if (!namePart && open) {
+      open.sets.push(...sets)
+      open.raw += ' / ' + line
+      continue
+    }
+    open = null
     let r = resolveCombo(namePart, opts.knownExercises)
     let note: string | undefined
     if (dumbbellPair) {
