@@ -286,5 +286,21 @@
   "removedExerciseIds": [
     "20261112-katsura-cc",
     "20261112-ryota-cc"
+  ],
+  "bodies": [
+    {
+      "id": "20261112-ryota-body",
+      "memberId": "me",
+      "date": "2026-11-12",
+      "weight": 76.3,
+      "memo": ""
+    },
+    {
+      "id": "20261112-katsura-body",
+      "memberId": "katsura",
+      "date": "2026-11-12",
+      "weight": 71,
+      "memo": ""
+    }
   ]
 }
