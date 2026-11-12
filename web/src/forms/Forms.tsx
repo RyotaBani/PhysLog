@@ -7,7 +7,7 @@ import { DateField, Scale, Sheet, Stepper, UnitInput, toast } from '../component
 import {
   ABILITY_PRESETS, CONDITION_COLORS, EXERCISES, SPORTS, abilityIcon, findAbility, isLowerBetter, resolveAlias,
 } from '../lib/presets'
-import { exerciseVolume, fullDate, kg, labelDate, num, parseNum, sessionVolume, setsSummary } from '../lib/format'
+import { durationLabel, exerciseVolume, fullDate, kg, labelDate, minutesBetween, nowHM, num, parseNum, sessionVolume, setsSummary } from '../lib/format'
 
 const str = (v?: number) => (v == null ? '' : String(v))
 const byDateDesc = <T extends { date: string }>(a: T, b: T) => b.date.localeCompare(a.date)
@@ -192,6 +192,8 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
     [sessions, e, date],
   )
   const [sport, setSport] = useState(e?.sport ?? past[0]?.sport ?? (profile.sport || 'ウェイトトレーニング'))
+  const [start, setStart] = useState(e?.start ?? '')
+  const [end, setEnd] = useState(e?.end ?? '')
   const [memo, setMemo] = useState(e?.memo ?? '')
   const [exs, setExs] = useState<ExerciseLog[]>(() => e?.exercises.map((x) => ({ ...x, sets: x.sets.map((s) => ({ ...s })) })) ?? [])
   const [picking, setPicking] = useState(exs.length === 0 && past.length === 0)
@@ -222,7 +224,7 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
 
   const save = () => {
     const cleaned = exs.map((x) => ({ ...x, sets: x.sets.filter((s) => s.weight != null || s.reps != null) }))
-    actions.saveSession({ id: e?.id ?? uid(), date: date, sport, memo, exercises: cleaned })
+    actions.saveSession({ id: e?.id ?? uid(), date: date, sport, memo, exercises: cleaned, start: start || undefined, end: end || undefined })
     toast('トレーニングを保存しました')
     props.onClose()
   }
@@ -251,6 +253,19 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
       onDelete={e ? () => { actions.remove('sessions', e.id); props.onClose() } : undefined}
     >
       <DateField value={date} onChange={setDate} />
+      <div className="card" style={{ padding: 12 }}>
+        <div className="row">
+          <span className="sub" style={{ fontWeight: 700 }}>時間</span>
+          <input type="time" value={start} onChange={(ev) => setStart(ev.target.value)} style={{ width: 'auto', padding: '6px 8px' }} aria-label="開始時刻" />
+          <span className="muted">〜</span>
+          <input type="time" value={end} onChange={(ev) => setEnd(ev.target.value)} style={{ width: 'auto', padding: '6px 8px' }} aria-label="終了時刻" />
+          <span className="grow sub" style={{ textAlign: 'right' }}>{durationLabel(minutesBetween(start, end))}</span>
+        </div>
+        <div className="row" style={{ marginTop: 8 }}>
+          {!start && <button className="chip" onClick={() => setStart(nowHM())}>▶ 今から開始</button>}
+          {start && !end && <button className="chip on" onClick={() => setEnd(nowHM())}>■ 今終わった</button>}
+        </div>
+      </div>
       <div className="chips scroll" style={{ marginBottom: 12 }}>
         {SPORTS.map((s) => (
           <button key={s} className={'chip' + (sport === s ? ' on' : '')} onClick={() => setSport(s)}>{s}</button>

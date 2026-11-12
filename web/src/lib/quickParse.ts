@@ -27,6 +27,8 @@ export interface ParsedBlock {
   key: string
   date: string
   members: string[] // メンバー名（未登録の名前も含む）
+  start?: string
+  end?: string
   exercises: ParsedExercise[]
 }
 
@@ -159,7 +161,7 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
   const current = () => {
     let b = blocks[blocks.length - 1]
     if (!b || b.date !== date || b.members.join('|') !== members.join('|')) {
-      b = { key: 'b' + k++, date, members: [...members], exercises: [] }
+      b = { key: 'b' + k++, date, members: [...members], exercises: [], start, end }
       blocks.push(b)
     }
     return b
@@ -167,11 +169,23 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
   const isMemberToken = (t: string) =>
     opts.memberNames.some((m) => norm(m) === norm(t)) || /^[A-Z][a-z]+$/.test(t) || /^[一-鿿]{1,4}(さん|くん|ちゃん)?$/.test(t)
 
+  let start: string | undefined, end: string | undefined
+  const hm = (h: string, m: string) => `${h.padStart(2, '0')}:${m}`
   for (const line of lines) {
+    // 時間帯の行（19:30-20:45 / 19:30〜20:45）。日付と同じ行でもよい
+    const t = line.normalize('NFKC').match(/(\d{1,2}):(\d{2})\s*[-~〜–]\s*(\d{1,2}):(\d{2})/)
+    if (t) {
+      const dd = parseDate(line.normalize('NFKC').replace(t[0], ''), year)
+      if (dd && dd !== date) { date = dd; open = null }
+      start = hm(t[1], t[2]); end = hm(t[3], t[4])
+      blocks.forEach((b) => { if (b.date === date && !b.start) { b.start = start; b.end = end } })
+      continue
+    }
     const d = parseDate(line, year)
     // 日付だけ（＋見出し語）の行
     if (d && !/\d+\s*(kg|rep|回|set|セット)/i.test(line)) {
       open = null
+      if (d !== date) { start = undefined; end = undefined }
       date = d
       continue
     }

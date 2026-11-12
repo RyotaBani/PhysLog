@@ -82,10 +82,10 @@ export function TextImport(props: { onClose: () => void }) {
           const fresh = logs.filter((l) => !existing.exercises.some((x) => x.name === l.name && JSON.stringify(x.sets) === JSON.stringify(l.sets)))
           added += fresh.length
           const memo = [existing.memo, ...notes.filter((n) => !existing.memo.includes(n))].filter(Boolean).join('\n')
-          actions.saveSession({ ...existing, memo, exercises: [...existing.exercises, ...fresh] })
+          actions.saveSession({ ...existing, memo, exercises: [...existing.exercises, ...fresh], start: existing.start ?? b.start, end: existing.end ?? b.end })
         } else {
           added += logs.length
-          actions.saveSession({ id: uid(), memberId, date: b.date, sport: cur.profile.sport || 'ウェイトトレーニング', memo: notes.join('\n'), exercises: logs })
+          actions.saveSession({ id: uid(), memberId, date: b.date, sport: cur.profile.sport || 'ウェイトトレーニング', memo: notes.join('\n'), exercises: logs, start: b.start, end: b.end })
         }
       }
     }
@@ -111,6 +111,8 @@ export function TextImport(props: { onClose: () => void }) {
           ・日付の行（11/12）、人の行（Ryota,Katsura）は次の行から有効<br />
           ・「20kg 5rep 3set」「20kg×5×3」「20 5 3」どれでも可。カンマで重量違いを並べられます<br />
           ・「2db」の次の行はダンベル2個（重量は片手）<br />
+          ・「19:30-20:45」の行でトレーニング時間も入ります<br />
+          ・「30秒」「60s」でキープ時間<br />
           ・書きかけは自動で残ります
         </div>
       </Sheet>
@@ -131,9 +133,12 @@ export function TextImport(props: { onClose: () => void }) {
         const extra = b.members.filter((n) => !raw.members.some((m) => m.name === n))
         return (
           <div className="card" key={b.key}>
-            <div className="row" style={{ marginBottom: 10 }}>
+            <div className="row" style={{ marginBottom: 10, flexWrap: 'wrap' }}>
               <input type="date" value={b.date} max={todayKey()} onChange={(e) => e.target.value && patchBlock(b.key, (x) => ({ ...x, date: e.target.value }))} style={{ width: 'auto', padding: '6px 10px', fontWeight: 700 }} />
               <span className="sub">{labelDate(b.date)}</span>
+              <input type="time" value={b.start ?? ''} onChange={(e) => patchBlock(b.key, (x) => ({ ...x, start: e.target.value || undefined }))} style={{ width: 'auto', padding: '6px 8px' }} aria-label="開始" />
+              <span className="muted">〜</span>
+              <input type="time" value={b.end ?? ''} onChange={(e) => patchBlock(b.key, (x) => ({ ...x, end: e.target.value || undefined }))} style={{ width: 'auto', padding: '6px 8px' }} aria-label="終了" />
             </div>
             <div className="chips" style={{ marginBottom: 12 }}>
               {[...raw.members.map((m) => m.name), ...extra].map((n) => {

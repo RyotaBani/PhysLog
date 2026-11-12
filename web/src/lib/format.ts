@@ -76,3 +76,21 @@ export const parseNum = (s: string): number | undefined => {
   const v = parseFloat(s.replace(',', '.'))
   return Number.isFinite(v) ? v : undefined
 }
+
+export const nowHM = () => {
+  const d = new Date()
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** "19:30" と "20:45" から所要分。日付またぎも考慮 */
+export const minutesBetween = (start?: string, end?: string) => {
+  if (!start || !end) return undefined
+  const [a, b] = start.split(':').map(Number)
+  const [c, d] = end.split(':').map(Number)
+  let m = c * 60 + d - (a * 60 + b)
+  if (m < 0) m += 24 * 60
+  return m
+}
+
+export const durationLabel = (min?: number) =>
+  min == null ? '' : min >= 60 ? `${Math.floor(min / 60)}時間${min % 60 ? `${min % 60}分` : ''}` : `${min}分`

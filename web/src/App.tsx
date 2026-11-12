@@ -7,6 +7,7 @@ import { Insights } from './screens/Insights'
 import { Menu } from './screens/Menu'
 import { Settings } from './screens/Settings'
 import { ToastHost } from './components/ui'
+import { TimerMini, TimerPanel } from './components/Timer'
 
 type Tab = 'today' | 'history' | 'graph' | 'insights' | 'menu' | 'settings'
 const TABS: { id: Tab; label: string; icon: string; title: string }[] = [
@@ -36,6 +37,7 @@ function MemberSwitch() {
 export function App() {
   const [tab, setTab] = useState<Tab>(() => (location.hash.slice(1) as Tab) || 'today')
   const [editing, setEditing] = useState<Editing | null>(null)
+  const [timerOpen, setTimerOpen] = useState(false)
   const go = (t: Tab) => { setTab(t); history.replaceState(null, '', '#' + t); window.scrollTo(0, 0) }
   const cur = TABS.find((t) => t.id === tab) ?? TABS[0]
 
@@ -56,10 +58,12 @@ export function App() {
           <div className="topbar-in">
             <h1>{cur.title}</h1>
             <MemberSwitch />
+            <button className="icon-btn" onClick={() => setTimerOpen(true)} aria-label="タイマー">⏱</button>
             {tab !== 'settings' && (
               <button className="icon-btn mobile-only" onClick={() => go('settings')} aria-label="設定">⚙️</button>
             )}
           </div>
+          <div className="topbar-in"><TimerMini onOpen={() => setTimerOpen(true)} /></div>
         </header>
         {tab === 'today' && <Today onEdit={setEditing} />}
         {tab === 'history' && <History onEdit={setEditing} />}
@@ -76,6 +80,7 @@ export function App() {
         ))}
       </nav>
       <EditorHost editing={editing} onClose={() => setEditing(null)} />
+      {timerOpen && <TimerPanel onClose={() => setTimerOpen(false)} />}
       <ToastHost />
     </div>
   )

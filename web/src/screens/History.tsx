@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useData } from '../store'
 import type { Editing } from './Today'
 import { abilityIcon } from '../lib/presets'
-import { labelDate, num, sessionVolume, setsSummary } from '../lib/format'
+import { durationLabel, labelDate, minutesBetween, num, sessionVolume, setsSummary } from '../lib/format'
 import { CONDITION_LABELS } from '../lib/presets'
 
 type Filter = 'all' | 'training' | 'body' | 'ability' | 'condition'
@@ -28,7 +28,7 @@ export function History(props: { onEdit: (e: Editing) => void }) {
       for (const s of d.sessions)
         rows.push({
           date: s.date, key: s.id, edit: { kind: 'training', date: s.date, item: s }, icon: '🏋️',
-          title: s.sport || 'トレーニング',
+          title: (s.sport || 'トレーニング') + (s.start && s.end ? `（${s.start}〜${s.end}・${durationLabel(minutesBetween(s.start, s.end))}）` : ''),
           detail: s.exercises.map((x) => `${x.name} ${setsSummary(x.sets)}`).join('\n') + (s.memo ? `\n${s.memo}` : ''),
           right: sessionVolume(s) ? `${Math.round(sessionVolume(s)).toLocaleString()}kg` : undefined,
         })

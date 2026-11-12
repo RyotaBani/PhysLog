@@ -43,6 +43,9 @@ export interface TrainingSession {
   date: string
   sport: string
   memo: string
+  /** 開始・終了時刻（"HH:MM"）。任意 */
+  start?: string
+  end?: string
   exercises: ExerciseLog[]
 }
 

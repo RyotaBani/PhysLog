@@ -5,7 +5,7 @@ import { DateNav, Scale, toast } from '../components/ui'
 import { AbilityForm, BodyForm, ConditionForm, TrainingForm } from '../forms/Forms'
 import { TextImport } from '../forms/TextImport'
 import { CONDITION_COLORS, abilityIcon, isLowerBetter } from '../lib/presets'
-import { addDays, num, sessionVolume, setsSummary, todayKey } from '../lib/format'
+import { addDays, durationLabel, minutesBetween, num, sessionVolume, setsSummary, todayKey } from '../lib/format'
 
 export type Editing =
   | { kind: 'body'; date: string; item?: BodyMeasurement }
@@ -112,7 +112,7 @@ export function Today(props: { onEdit: (e: Editing) => void }) {
             <div key={s.id} className="list-item tap" onClick={() => props.onEdit({ kind: 'training', date, item: s })}>
               <div className="grow">
                 <div className="row" style={{ marginBottom: 4 }}>
-                  <b className="grow">{s.sport || 'トレーニング'}</b>
+                  <b className="grow">{s.sport || 'トレーニング'}{s.start && <span className="sub" style={{ fontWeight: 500, marginLeft: 8 }}>{s.start}{s.end ? `〜${s.end}（${durationLabel(minutesBetween(s.start, s.end))}）` : '〜'}</span>}</b>
                   {sessionVolume(s) > 0 && <span className="sub">{Math.round(sessionVolume(s)).toLocaleString()}kg</span>}
                 </div>
                 {s.exercises.map((x) => (

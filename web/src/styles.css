@@ -59,7 +59,7 @@ textarea { resize: vertical; min-height: 60px; }
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
 }
 .topbar-in { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 8px; }
-.topbar h1 { font-size: 24px; margin: 0; flex: 1; letter-spacing: -0.02em; }
+.topbar h1 { font-size: 22px; margin: 0; flex: 1; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .tabbar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; display: flex;
   background: color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter: blur(12px);
@@ -173,3 +173,9 @@ textarea { resize: vertical; min-height: 60px; }
 .chart .grid { stroke: var(--line); stroke-width: 1; }
 .tip { font-size: 13px; font-weight: 700; min-height: 20px; }
 @media (min-width: 900px) { .mobile-only { display: none !important; } }
+
+.timer-mini {
+  margin-top: 8px; width: 100%; padding: 8px 14px; border-radius: 12px; background: var(--primary); color: #fff;
+  font-size: 14px; font-weight: 600; text-align: left; font-variant-numeric: tabular-nums;
+}
+.timer-mini b { font-size: 16px; margin-left: 6px; }
