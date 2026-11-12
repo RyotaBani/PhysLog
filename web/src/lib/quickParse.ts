@@ -57,7 +57,7 @@ const EXTRA_ALIASES: Record<string, string> = {
   DEADLIFT: 'デッドリフト', SQUAT: 'スクワット', BACKSQUAT: 'バックスクワット', FRONTSQUAT: 'フロントスクワット',
   BENCH: 'ベンチプレス', BENCHPRESS: 'ベンチプレス', CLEAN: 'ハングクリーン', HANGCLEAN: 'ハングクリーン',
   ROW: 'ベントオーバーロウ', LATPULL: 'ラットプルダウン', CURL: 'ダンベルカール', PLANK: 'プランク',
-  CALF: 'カーフレイズ', PU: '懸垂', CHIN: '懸垂', PULLUP: '懸垂', DIPS: 'ディップス',
+  CALF: 'カーフレイズ', CABLECRUNCH: 'ケーブルクランチ', 'ロープクランチ': 'ケーブルクランチ', 'ニーリングケーブルクランチ': 'ケーブルクランチ', 'ケーブル腹筋': 'ケーブルクランチ', PU: '懸垂', CHIN: '懸垂', PULLUP: '懸垂', DIPS: 'ディップス',
 }
 
 export function resolveName(raw: string, known: string[]): { name: string; match: ParsedExercise['match'] } {
