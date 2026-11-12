@@ -45,10 +45,15 @@ function load(): AppData {
       const src = seed.sessions?.find((x) => x.id === s.id)
       if (!src) return s
       const add = src.exercises.filter((e) => !done.has(e.id) && !s.exercises.some((x) => x.id === e.id))
-      return add.length ? { ...s, exercises: [...s.exercises, ...add] } : s
+      const memoLines = src.memo.split('\n').filter((l) => l && !done.has('memo:' + l) && !s.memo.includes(l))
+      if (!add.length && !memoLines.length) return s
+      return { ...s, exercises: [...s.exercises, ...add], memo: [s.memo, ...memoLines].filter(Boolean).join('\n') }
     })
     ;[fresh.sessions, fresh.bodies, fresh.abilities, fresh.conditions].forEach((l) => l.forEach((x) => done.add(x.id)))
-    seed.sessions?.forEach((x) => x.exercises.forEach((e) => done.add(e.id)))
+    seed.sessions?.forEach((x) => {
+      x.exercises.forEach((e) => done.add(e.id))
+      x.memo.split('\n').filter(Boolean).forEach((l) => done.add('memo:' + l))
+    })
     localStorage.setItem(SEEDED, JSON.stringify([...done]))
     return mergeInto({ ...base, sessions }, fresh)
   } catch {
