@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "members": [
+    {
+      "id": "me",
+      "name": "Ryota"
+    },
+    {
+      "id": "katsura",
+      "name": "Katsura"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "20261112-ryota-1",
+      "memberId": "me",
+      "date": "2026-11-12",
+      "sport": "ウェイトトレーニング",
+      "memo": "",
+      "exercises": [
+        {
+          "id": "20261112-ryota-bsq",
+          "name": "バックスクワット",
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 5
+            },
+            {
+              "weight": 110,
+              "reps": 5
+            },
+            {
+              "weight": 110,
+              "reps": 5
+            },
+            {
+              "weight": 110,
+              "reps": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "20261112-katsura-1",
+      "memberId": "katsura",
+      "date": "2026-11-12",
+      "sport": "ウェイトトレーニング",
+      "memo": "",
+      "exercises": [
+        {
+          "id": "20261112-katsura-bsq",
+          "name": "バックスクワット",
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 5
+            },
+            {
+              "weight": 60,
+              "reps": 5
+            },
+            {
+              "weight": 60,
+              "reps": 5
+            },
+            {
+              "weight": 60,
+              "reps": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeMemberId": "me"
+}
