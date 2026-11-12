@@ -113,7 +113,7 @@
           ]
         },
         {
-          "id": "20261112-ryota-cc",
+          "id": "20261112-ryota-cc2",
           "name": "ケーブルクランチ",
           "sets": [
             {
@@ -121,11 +121,7 @@
               "reps": 10
             },
             {
-              "weight": 50,
-              "reps": 10
-            },
-            {
-              "weight": 50,
+              "weight": 60,
               "reps": 10
             }
           ]
@@ -234,7 +230,7 @@
           ]
         },
         {
-          "id": "20261112-katsura-cc",
+          "id": "20261112-katsura-cc2",
           "name": "ケーブルクランチ",
           "sets": [
             {
@@ -242,11 +238,7 @@
               "reps": 10
             },
             {
-              "weight": 50,
-              "reps": 10
-            },
-            {
-              "weight": 50,
+              "weight": 60,
               "reps": 10
             }
           ]
@@ -254,5 +246,9 @@
       ]
     }
   ],
-  "activeMemberId": "me"
+  "activeMemberId": "me",
+  "removedExerciseIds": [
+    "20261112-katsura-cc",
+    "20261112-ryota-cc"
+  ]
 }

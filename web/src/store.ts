@@ -37,7 +37,11 @@ function load(): AppData {
     const pick = <T extends { id: string }>(l: T[] = []) => l.filter((x) => !done.has(x.id))
     const fresh = { members: seed.members, sessions: pick(seed.sessions), bodies: pick(seed.bodies), abilities: pick(seed.abilities), conditions: pick(seed.conditions) }
     // 既に入れたセッションに後から足した種目は、種目単位で追記する
-    const sessions = base.sessions.map((s) => {
+    // 訂正で差し替えた種目（古いID）は一度だけ取り除く
+    const removed = ((SEED as { removedExerciseIds?: string[] }).removedExerciseIds ?? []).filter((id) => !done.has('rm:' + id))
+    removed.forEach((id) => done.add('rm:' + id))
+    const sessions = base.sessions.map((s0) => {
+      const s = removed.length ? { ...s0, exercises: s0.exercises.filter((e) => !removed.includes(e.id)) } : s0
       const src = seed.sessions?.find((x) => x.id === s.id)
       if (!src) return s
       const add = src.exercises.filter((e) => !done.has(e.id) && !s.exercises.some((x) => x.id === e.id))
