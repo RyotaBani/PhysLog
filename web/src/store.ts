@@ -27,15 +27,55 @@ function normalize(d: Partial<AppData>): AppData {
 function load(): AppData {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return normalize(JSON.parse(raw))
-    // プレビュー版（1ファイル版）だけ、初回は手元の記録を入れた状態で始める
-    return import.meta.env.MODE === 'single' ? normalize(SEED as Partial<AppData>) : empty()
+    const base = raw ? normalize(JSON.parse(raw)) : empty()
+    // プレビュー版（1ファイル版）だけ、手元の記録を入れた状態で始める。
+    // 一度入れた記録は消しても戻らないよう、入れたIDを覚えておく。
+    if (import.meta.env.MODE !== 'single') return base
+    const SEEDED = KEY + '.seeded'
+    const done = new Set<string>(JSON.parse(localStorage.getItem(SEEDED) ?? '[]'))
+    const seed = SEED as Partial<AppData>
+    const pick = <T extends { id: string }>(l: T[] = []) => l.filter((x) => !done.has(x.id))
+    const fresh = { members: seed.members, sessions: pick(seed.sessions), bodies: pick(seed.bodies), abilities: pick(seed.abilities), conditions: pick(seed.conditions) }
+    ;[fresh.sessions, fresh.bodies, fresh.abilities, fresh.conditions].forEach((l) => l.forEach((x) => done.add(x.id)))
+    localStorage.setItem(SEEDED, JSON.stringify([...done]))
+    return mergeInto(base, fresh)
   } catch {
     return empty()
   }
 }
 
 const belongs = (memberId: string | undefined, active: string) => (memberId ?? DEFAULT_MEMBER) === active
+
+const mergeList = <T extends { id: string }>(a: T[], b: T[] = []) => {
+  const ids = new Set(a.map((x) => x.id))
+  return [...a, ...b.filter((x) => !ids.has(x.id))]
+}
+
+function mergeInto(state: AppData, d: Partial<AppData>): AppData {
+  const members = [...state.members]
+  const idMap = new Map<string, string>()
+  for (const m of d.members ?? []) {
+    const i = members.findIndex((x) => x.id === m.id || x.name === m.name)
+    if (i >= 0) {
+      idMap.set(m.id, members[i].id)
+      // 初期名「自分」のままなら取り込んだ名前を使う
+      if (members[i].name === '自分' && m.name) members[i] = { ...members[i], name: m.name }
+    } else {
+      members.push(m)
+      idMap.set(m.id, m.id)
+    }
+  }
+  const remap = <T extends { memberId?: string }>(l: T[] = []) =>
+    l.map((x) => ({ ...x, memberId: idMap.get(x.memberId ?? DEFAULT_MEMBER) ?? x.memberId ?? DEFAULT_MEMBER }))
+  return {
+    ...state,
+    members,
+    bodies: mergeList(state.bodies, remap(d.bodies)),
+    abilities: mergeList(state.abilities, remap(d.abilities)),
+    sessions: mergeList(state.sessions, remap(d.sessions)),
+    conditions: mergeList(state.conditions, remap(d.conditions)),
+  }
+}
 
 let state: AppData = load()
 let view: AppData = scope(state)
@@ -92,11 +132,6 @@ function remove(col: Collection, id: string) {
   commit({ ...state, [col]: list.filter((x) => x.id !== id) })
 }
 
-const mergeList = <T extends { id: string }>(a: T[], b: T[] = []) => {
-  const ids = new Set(a.map((x) => x.id))
-  return [...a, ...b.filter((x) => !ids.has(x.id))]
-}
-
 export const actions = {
   saveBody: (b: ItemOf<'bodies'>) => upsert('bodies', b),
   saveAbility: (a: ItemOf<'abilities'>) => upsert('abilities', a),
@@ -131,29 +166,7 @@ export const actions = {
 
   replaceAll: (d: Partial<AppData>) => commit(normalize(d)),
   /** 取り込み。同じIDは上書きしない。メンバーも名前で突き合わせて追加 */
-  merge: (d: Partial<AppData>) => {
-    const members = [...state.members]
-    const idMap = new Map<string, string>()
-    for (const m of d.members ?? []) {
-      const i = members.findIndex((x) => x.id === m.id || x.name === m.name)
-      if (i >= 0) {
-        idMap.set(m.id, members[i].id)
-        // 初期名「自分」のままなら取り込んだ名前を使う
-        if (members[i].name === '自分' && m.name) members[i] = { ...members[i], name: m.name }
-      }
-      else { members.push(m); idMap.set(m.id, m.id) }
-    }
-    const remap = <T extends { memberId?: string }>(l: T[] = []) =>
-      l.map((x) => ({ ...x, memberId: idMap.get(x.memberId ?? DEFAULT_MEMBER) ?? x.memberId ?? DEFAULT_MEMBER }))
-    commit({
-      ...state,
-      members,
-      bodies: mergeList(state.bodies, remap(d.bodies)),
-      abilities: mergeList(state.abilities, remap(d.abilities)),
-      sessions: mergeList(state.sessions, remap(d.sessions)),
-      conditions: mergeList(state.conditions, remap(d.conditions)),
-    })
-  },
+  merge: (d: Partial<AppData>) => commit(mergeInto(state, d)),
   /** 選択中メンバーの記録だけ消す */
   clearActive: () => {
     const a = state.activeMemberId
