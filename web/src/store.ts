@@ -41,7 +41,10 @@ function load(): AppData {
     const removed = ((SEED as { removedExerciseIds?: string[] }).removedExerciseIds ?? []).filter((id) => !done.has('rm:' + id))
     removed.forEach((id) => done.add('rm:' + id))
     const sessions = base.sessions.map((s0) => {
-      const s = removed.length ? { ...s0, exercises: s0.exercises.filter((e) => !removed.includes(e.id)) } : s0
+      const rmMemo = (SEED as { removedMemoLines?: string[] }).removedMemoLines ?? []
+      const s = removed.length || rmMemo.some((l) => s0.memo.includes(l))
+        ? { ...s0, exercises: s0.exercises.filter((e) => !removed.includes(e.id)), memo: s0.memo.split('\n').filter((l) => !rmMemo.includes(l)).join('\n') }
+        : s0
       const src = seed.sessions?.find((x) => x.id === s.id)
       if (!src) return s
       const add = src.exercises.filter((e) => !done.has(e.id) && !s.exercises.some((x) => x.id === e.id))

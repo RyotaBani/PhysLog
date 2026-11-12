@@ -61,8 +61,11 @@ export const setsSummary = (sets: SetEntry[]) => {
   return groups
     .map(({ s, n }) => {
       let t = s.weight != null ? kg(s.weight) : ''
-      if (s.reps != null) t += t ? `×${s.reps}` : `${s.reps}回`
-      if (s.sec != null) t += t ? `×${s.sec}秒` : `${s.sec}秒`
+      if (s.sec != null && s.reps != null && s.weight == null) t = `${s.sec}秒＋${s.reps}回`
+      else {
+        if (s.reps != null) t += t ? `×${s.reps}` : `${s.reps}回`
+        if (s.sec != null) t += t ? `×${s.sec}秒` : `${s.sec}秒`
+      }
       if (!t) t = '—'
       return n > 1 ? `${t}×${n}セット` : t
     })
