@@ -57,7 +57,7 @@ const EXTRA_ALIASES: Record<string, string> = {
   DEADLIFT: 'デッドリフト', SQUAT: 'スクワット', BACKSQUAT: 'バックスクワット', FRONTSQUAT: 'フロントスクワット',
   BENCH: 'ベンチプレス', BENCHPRESS: 'ベンチプレス', CLEAN: 'ハングクリーン', HANGCLEAN: 'ハングクリーン',
   ROW: 'ベントオーバーロウ', LATPULL: 'ラットプルダウン', CURL: 'ダンベルカール', PLANK: 'プランク',
-  CALF: 'カーフレイズ', CABLECRUNCH: 'ケーブルクランチ', 'ロープクランチ': 'ケーブルクランチ', 'ニーリングケーブルクランチ': 'ケーブルクランチ', 'ケーブル腹筋': 'ケーブルクランチ', PU: '懸垂', CHIN: '懸垂', PULLUP: '懸垂', DIPS: 'ディップス',
+  CALF: 'カーフレイズ', 'ダイアゴナル': 'ストレッチポール ダイアゴナル', CABLECRUNCH: 'ケーブルクランチ', 'ロープクランチ': 'ケーブルクランチ', 'ニーリングケーブルクランチ': 'ケーブルクランチ', 'ケーブル腹筋': 'ケーブルクランチ', PU: '懸垂', CHIN: '懸垂', PULLUP: '懸垂', DIPS: 'ディップス',
 }
 
 export function resolveName(raw: string, known: string[]): { name: string; match: ParsedExercise['match'] } {
@@ -114,26 +114,29 @@ function parseSets(text: string): SetEntry[] | null {
   const out: SetEntry[] = []
   for (const seg of segs) {
     const s = seg.toLowerCase().replace(/[x×*]/g, ' ')
-    let weight: number | undefined, reps: number | undefined, sets: number | undefined
-    const w = s.match(/(\d+(?:\.\d+)?)\s*(?:kg|ｋｇ|キロ)/)
-    const r = s.match(/(\d+)\s*(?:rep|reps|回|r\b)/)
-    const st = s.match(/(\d+)\s*(?:set|sets|セット|s\b)/)
+    let weight: number | undefined, reps: number | undefined, sets: number | undefined, sec: number | undefined
+    const sm = s.match(/(\d+)\s*(?:秒|sec|s(?![a-z])|キープ|keep)/)
+    if (sm) sec = Number(sm[1])
+    const s2 = sm ? s.replace(sm[0], ' ') : s
+    const w = s2.match(/(\d+(?:\.\d+)?)\s*(?:kg|ｋｇ|キロ)/)
+    const r = s2.match(/(\d+)\s*(?:rep|reps|回|r\b)/)
+    const st = s2.match(/(\d+)\s*(?:set|sets|セット)/)
     if (w) weight = Number(w[1])
     if (r) reps = Number(r[1])
     if (st) sets = Number(st[1])
     // 単位のない数字は「重量 回数 セット」の順で空いている所に入れる
-    const rest = s
+    const rest = s2
       .replace(w?.[0] ?? '\u0000', ' ').replace(r?.[0] ?? '\u0000', ' ').replace(st?.[0] ?? '\u0000', ' ')
       .match(/\d+(?:\.\d+)?/g)?.map(Number) ?? []
-    const isBodyweight = /自重|bw/.test(s)
+    const isBodyweight = /自重|bw/.test(s) || sec != null
     for (const n of rest) {
       if (weight == null && !isBodyweight && !(reps != null && sets == null && rest.length === 1)) weight = n
       else if (reps == null) reps = n
       else if (sets == null) sets = n
     }
-    if (weight == null && reps == null) continue
+    if (weight == null && reps == null && sec == null) continue
     const count = Math.min(Math.max(sets ?? 1, 1), 20)
-    for (let i = 0; i < count; i++) out.push({ weight, reps })
+    for (let i = 0; i < count; i++) out.push(sec != null ? { weight, reps, sec } : { weight, reps })
   }
   return out.length ? out : null
 }
@@ -188,7 +191,7 @@ export function parseQuickText(text: string, opts: { memberNames: string[]; know
     }
     // 種目行：最初の数字の手前までを種目名とみなす
     const n = line.normalize('NFKC')
-    const firstNum = n.search(/(?<![A-Za-z])\d+(?:\.\d+)?\s*(kg|キロ|rep|回|set|セット|[x×*]|\s|$)/i)
+    const firstNum = n.search(/(?<![A-Za-z])\d+(?:\.\d+)?\s*(kg|キロ|rep|回|set|セット|秒|sec|キープ|s(?=[\s,、]|$)|[x×*]|\s|$)/i)
     let namePart = (firstNum >= 0 ? n.slice(0, firstNum) : n).replace(/[:：\-–]\s*$/, '').trim()
     let setsPart = firstNum >= 0 ? n.slice(firstNum) : ''
     // 「懸垂 自重 8 3」の「自重」は種目名ではなくセット側の情報
@@ -232,9 +235,14 @@ export const setsToText = (sets: SetEntry[]) => {
   const groups: { s: SetEntry; n: number }[] = []
   for (const x of sets) {
     const g = groups[groups.length - 1]
-    if (g && g.s.weight === x.weight && g.s.reps === x.reps) g.n++
+    if (g && g.s.weight === x.weight && g.s.reps === x.reps && g.s.sec === x.sec) g.n++
     else groups.push({ s: x, n: 1 })
   }
-  return groups.map(({ s, n }) => `${s.weight ?? '自重'}${s.weight != null ? 'kg' : ''} ${s.reps ?? ''}回${n > 1 ? ` ${n}set` : ''}`).join(', ')
+  return groups.map(({ s, n }) => [
+    s.weight != null ? `${s.weight}kg` : s.sec == null ? '自重' : '',
+    s.reps != null ? `${s.reps}回` : '',
+    s.sec != null ? `${s.sec}秒` : '',
+    n > 1 ? `${n}set` : '',
+  ].filter(Boolean).join(' ')).join(', ')
 }
 export const textToSets = (t: string) => parseSets(t) ?? []

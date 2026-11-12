@@ -55,13 +55,14 @@ export const setsSummary = (sets: SetEntry[]) => {
   const groups: { s: SetEntry; n: number }[] = []
   for (const x of sets) {
     const g = groups[groups.length - 1]
-    if (g && g.s.weight === x.weight && g.s.reps === x.reps) g.n++
+    if (g && g.s.weight === x.weight && g.s.reps === x.reps && g.s.sec === x.sec) g.n++
     else groups.push({ s: x, n: 1 })
   }
   return groups
     .map(({ s, n }) => {
       let t = s.weight != null ? kg(s.weight) : ''
       if (s.reps != null) t += t ? `×${s.reps}` : `${s.reps}回`
+      if (s.sec != null) t += t ? `×${s.sec}秒` : `${s.sec}秒`
       if (!t) t = '—'
       return n > 1 ? `${t}×${n}セット` : t
     })

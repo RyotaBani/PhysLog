@@ -26,6 +26,8 @@ export interface PhysicalAbility {
 export interface SetEntry {
   weight?: number
   reps?: number
+  /** キープ系の種目の秒数（プランク・ダイアゴナルなど） */
+  sec?: number
 }
 
 export interface ExerciseLog {

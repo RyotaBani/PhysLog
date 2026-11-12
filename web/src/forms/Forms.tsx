@@ -274,6 +274,7 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
 
       {exs.map((x) => {
         const last = lastOf(x.name)
+        const timed = x.sets.some((s) => s.sec != null) && !x.sets.some((s) => s.weight != null)
         return (
           <div className="ex" key={x.id}>
             <div className="ex-h">
@@ -281,12 +282,20 @@ export function TrainingForm(props: { date: string; existing?: TrainingSession; 
               <span className="sub">{exerciseVolume(x) > 0 ? `${Math.round(exerciseVolume(x)).toLocaleString()}kg` : ''}</span>
               <button className="icon-btn" style={{ width: 30, height: 30, fontSize: 13 }} onClick={() => setExs((l) => l.filter((y) => y.id !== x.id))} aria-label="種目を削除">✕</button>
             </div>
-            {last && <div className="sub" style={{ marginBottom: 8 }}>前回 {fullDate(last.date)}：{setsSummary(last.ex.sets)}</div>}
-            <div className="set-head"><span>SET</span><span>重量</span><span>回数</span><span /></div>
+            <div className="row" style={{ marginBottom: 8 }}>
+              <span className="sub grow">{last ? `前回 ${fullDate(last.date)}：${setsSummary(last.ex.sets)}` : ''}</span>
+              <button className="chip" onClick={() => update(x.id, (y) => ({
+                ...y,
+                sets: y.sets.map((z) => (timed ? { weight: undefined, reps: z.reps } : { reps: z.reps, sec: z.sec ?? 30 })),
+              }))}>{timed ? '重量で記録' : '秒で記録'}</button>
+            </div>
+            <div className="set-head"><span>SET</span><span>{timed ? '秒' : '重量'}</span><span>回数</span><span /></div>
             {x.sets.map((s, i) => (
               <div className="set-row" key={i}>
                 <span className="n">{i + 1}</span>
-                <Stepper value={s.weight} step={2.5} unit="kg" onChange={(v) => update(x.id, (y) => ({ ...y, sets: y.sets.map((z, j) => (j === i ? { ...z, weight: v } : z)) }))} />
+                {timed
+                  ? <Stepper value={s.sec} step={5} unit="秒" onChange={(v) => update(x.id, (y) => ({ ...y, sets: y.sets.map((z, j) => (j === i ? { ...z, sec: v == null ? undefined : Math.round(v) } : z)) }))} />
+                  : <Stepper value={s.weight} step={2.5} unit="kg" onChange={(v) => update(x.id, (y) => ({ ...y, sets: y.sets.map((z, j) => (j === i ? { ...z, weight: v } : z)) }))} />}
                 <Stepper value={s.reps} step={1} unit="回" onChange={(v) => update(x.id, (y) => ({ ...y, sets: y.sets.map((z, j) => (j === i ? { ...z, reps: v == null ? undefined : Math.round(v) } : z)) }))} />
                 <button className="muted" onClick={() => update(x.id, (y) => ({ ...y, sets: y.sets.filter((_, j) => j !== i) }))} aria-label="セットを削除">✕</button>
               </div>
