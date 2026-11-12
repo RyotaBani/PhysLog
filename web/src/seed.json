@@ -16,7 +16,7 @@
       "memberId": "me",
       "date": "2026-11-12",
       "sport": "ウェイトトレーニング",
-      "memo": "",
+      "memo": "ダンベルランジ→ステップアップはダンベル2個（重量は片手10kg）",
       "exercises": [
         {
           "id": "20261112-ryota-bsq",
@@ -75,6 +75,24 @@
               "reps": 10
             }
           ]
+        },
+        {
+          "id": "20261112-ryota-lunge",
+          "name": "ダンベルランジ→ステップアップ",
+          "sets": [
+            {
+              "weight": 10,
+              "reps": 5
+            },
+            {
+              "weight": 10,
+              "reps": 5
+            },
+            {
+              "weight": 10,
+              "reps": 5
+            }
+          ]
         }
       ]
     },
@@ -83,7 +101,7 @@
       "memberId": "katsura",
       "date": "2026-11-12",
       "sport": "ウェイトトレーニング",
-      "memo": "",
+      "memo": "ダンベルランジ→ステップアップはダンベル2個（重量は片手10kg）",
       "exercises": [
         {
           "id": "20261112-katsura-bsq",
@@ -140,6 +158,24 @@
             {
               "weight": 132,
               "reps": 10
+            }
+          ]
+        },
+        {
+          "id": "20261112-katsura-lunge",
+          "name": "ダンベルランジ→ステップアップ",
+          "sets": [
+            {
+              "weight": 10,
+              "reps": 5
+            },
+            {
+              "weight": 10,
+              "reps": 5
+            },
+            {
+              "weight": 10,
+              "reps": 5
             }
           ]
         }
