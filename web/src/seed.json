@@ -39,6 +39,24 @@
               "reps": 5
             }
           ]
+        },
+        {
+          "id": "20261112-ryota-ohsq",
+          "name": "オーバーヘッドスクワット",
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 5
+            },
+            {
+              "weight": 20,
+              "reps": 5
+            },
+            {
+              "weight": 20,
+              "reps": 5
+            }
+          ]
         }
       ]
     },
@@ -67,6 +85,24 @@
             },
             {
               "weight": 60,
+              "reps": 5
+            }
+          ]
+        },
+        {
+          "id": "20261112-katsura-ohsq",
+          "name": "オーバーヘッドスクワット",
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 5
+            },
+            {
+              "weight": 20,
+              "reps": 5
+            },
+            {
+              "weight": 20,
               "reps": 5
             }
           ]
