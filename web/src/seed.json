@@ -57,6 +57,24 @@
               "reps": 5
             }
           ]
+        },
+        {
+          "id": "20261112-ryota-lp",
+          "name": "レッグプレス",
+          "sets": [
+            {
+              "weight": 132,
+              "reps": 10
+            },
+            {
+              "weight": 132,
+              "reps": 10
+            },
+            {
+              "weight": 132,
+              "reps": 10
+            }
+          ]
         }
       ]
     },
@@ -104,6 +122,24 @@
             {
               "weight": 20,
               "reps": 5
+            }
+          ]
+        },
+        {
+          "id": "20261112-katsura-lp",
+          "name": "レッグプレス",
+          "sets": [
+            {
+              "weight": 132,
+              "reps": 10
+            },
+            {
+              "weight": 132,
+              "reps": 10
+            },
+            {
+              "weight": 132,
+              "reps": 10
             }
           ]
         }
