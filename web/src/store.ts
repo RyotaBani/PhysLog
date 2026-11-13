@@ -15,6 +15,7 @@ const empty = (): AppData => ({
   abilities: [],
   sessions: [],
   conditions: [],
+  photos: [],
 })
 
 function normalize(d: Partial<AppData>): AppData {
@@ -94,6 +95,7 @@ function mergeInto(state: AppData, d: Partial<AppData>): AppData {
     abilities: mergeList(state.abilities, remap(d.abilities)),
     sessions: mergeList(state.sessions, remap(d.sessions)),
     conditions: mergeList(state.conditions, remap(d.conditions)),
+    photos: mergeList(state.photos, remap(d.photos)),
   }
 }
 
@@ -110,6 +112,7 @@ function scope(s: AppData): AppData {
     abilities: s.abilities.filter((x) => belongs(x.memberId, a)),
     sessions: s.sessions.filter((x) => belongs(x.memberId, a)),
     conditions: s.conditions.filter((x) => belongs(x.memberId, a)),
+    photos: s.photos.filter((x) => belongs(x.memberId, a)),
   }
 }
 
@@ -136,7 +139,7 @@ export const useRawData = (): AppData => useSyncExternalStore(subscribe, () => s
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 
-type Collection = 'bodies' | 'abilities' | 'sessions' | 'conditions'
+type Collection = 'bodies' | 'abilities' | 'sessions' | 'conditions' | 'photos'
 type ItemOf<C extends Collection> = AppData[C][number]
 
 function upsert<C extends Collection>(col: C, item: ItemOf<C>) {
@@ -157,6 +160,7 @@ export const actions = {
   saveAbility: (a: ItemOf<'abilities'>) => upsert('abilities', a),
   saveSession: (s: ItemOf<'sessions'>) => upsert('sessions', s),
   saveCondition: (c: ItemOf<'conditions'>) => upsert('conditions', c),
+  savePhoto: (p: ItemOf<'photos'>) => upsert('photos', p),
   remove,
   setProfile: (p: AppData['profile']) => commit({ ...state, profile: p }),
 
@@ -181,6 +185,7 @@ export const actions = {
       abilities: keep(state.abilities),
       sessions: keep(state.sessions),
       conditions: keep(state.conditions),
+      photos: keep(state.photos),
     })
   },
 
@@ -191,7 +196,7 @@ export const actions = {
   clearActive: () => {
     const a = state.activeMemberId
     const keep = <T extends { memberId?: string }>(l: T[]) => l.filter((x) => !belongs(x.memberId, a))
-    commit({ ...state, bodies: keep(state.bodies), abilities: keep(state.abilities), sessions: keep(state.sessions), conditions: keep(state.conditions) })
+    commit({ ...state, bodies: keep(state.bodies), abilities: keep(state.abilities), sessions: keep(state.sessions), conditions: keep(state.conditions), photos: keep(state.photos) })
   },
   getState: () => state,
 }

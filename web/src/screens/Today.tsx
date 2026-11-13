@@ -4,6 +4,7 @@ import type { BodyMeasurement, ConditionRecord, PhysicalAbility, TrainingSession
 import { DateNav, Scale, toast } from '../components/ui'
 import { AbilityForm, BodyForm, ConditionForm, TrainingForm } from '../forms/Forms'
 import { TextImport } from '../forms/TextImport'
+import { estimateAll } from '../lib/estimate'
 import { CONDITION_COLORS, abilityIcon, isLowerBetter } from '../lib/presets'
 import { addDays, durationLabel, minutesBetween, num, sessionVolume, setsSummary, todayKey } from '../lib/format'
 
@@ -40,6 +41,7 @@ export function Today(props: { onEdit: (e: Editing) => void }) {
     () => [...d.bodies].filter((b) => b.date < date && b.weight != null).sort((a, b) => b.date.localeCompare(a.date))[0],
     [d.bodies, date],
   )
+  const est = useMemo(() => estimateAll(d.bodies, date), [d.bodies, date])
   const weekCount = useMemo(() => {
     const from = addDays(date, -6)
     return new Set(d.sessions.filter((s) => s.date >= from && s.date <= date).map((s) => s.date)).size
@@ -164,7 +166,18 @@ export function Today(props: { onEdit: (e: Editing) => void }) {
               <div className="stat"><div className="l">筋肉量</div><div className="v" style={{ fontSize: 20 }}>{num(body.muscle)}<small>kg</small></div></div>
             </div>
           ) : (
-            <div className="sub">{prevBody ? `前回 ${prevBody.weight}kg（${prevBody.date.slice(5).replace('-', '/')}）` : 'まだ記録がありません'}</div>
+            est.weight || est.bodyFat ? (
+              <div>
+                <div className="grid3">
+                  {([['体重', est.weight, 'kg'], ['体脂肪率', est.bodyFat, '%'], ['筋肉量', est.muscle, 'kg']] as const).map(([l, e, u]) => (
+                    <div className="stat" key={l}><div className="l">{l}</div><div className="v" style={{ fontSize: 20, color: 'var(--sub)' }}>{e ? `≈${e.value.toFixed(1)}` : '—'}<small>{u}</small></div></div>
+                  ))}
+                </div>
+                <div className="sub" style={{ marginTop: 6 }}>この日は未測定のため、前後の測定からの推定値です</div>
+              </div>
+            ) : (
+              <div className="sub">{prevBody ? `前回 ${prevBody.weight}kg（${prevBody.date.slice(5).replace('-', '/')}）` : 'まだ記録がありません'}</div>
+            )
           )}
         </div>
       </div>

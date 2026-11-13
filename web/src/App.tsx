@@ -5,15 +5,17 @@ import { History } from './screens/History'
 import { Graph } from './screens/Graph'
 import { Insights } from './screens/Insights'
 import { Menu } from './screens/Menu'
+import { Photos } from './screens/Photos'
 import { Settings } from './screens/Settings'
 import { ToastHost } from './components/ui'
 import { TimerMini, TimerPanel } from './components/Timer'
 
-type Tab = 'today' | 'history' | 'graph' | 'insights' | 'menu' | 'settings'
+type Tab = 'today' | 'history' | 'graph' | 'photos' | 'insights' | 'menu' | 'settings'
 const TABS: { id: Tab; label: string; icon: string; title: string }[] = [
   { id: 'today', label: '記録', icon: '✏️', title: '今日の記録' },
   { id: 'history', label: '履歴', icon: '🗂️', title: '履歴' },
   { id: 'graph', label: 'グラフ', icon: '📈', title: 'グラフ' },
+  { id: 'photos', label: '写真', icon: '📷', title: '体の写真' },
   { id: 'insights', label: '分析', icon: '🔍', title: 'コンディション分析' },
   { id: 'menu', label: 'メニュー', icon: '📋', title: 'メニュー提案' },
   { id: 'settings', label: '設定', icon: '⚙️', title: '設定' },
@@ -68,12 +70,13 @@ export function App() {
         {tab === 'today' && <Today onEdit={setEditing} />}
         {tab === 'history' && <History onEdit={setEditing} />}
         {tab === 'graph' && <Graph />}
+        {tab === 'photos' && <Photos />}
         {tab === 'insights' && <Insights />}
         {tab === 'menu' && <Menu />}
-        {tab === 'settings' && <Settings />}
+        {tab === 'settings' && <Settings onOpenMenu={() => go('menu')} />}
       </main>
       <nav className="tabbar">
-        {TABS.filter((t) => t.id !== 'settings').map((t) => (
+        {TABS.filter((t) => t.id !== 'settings' && t.id !== 'menu').map((t) => (
           <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)}>
             <span className="ic">{t.icon}</span>{t.label}
           </button>

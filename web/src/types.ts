@@ -65,6 +65,17 @@ export interface Profile {
   sport: string
 }
 
+export type PhotoPose = 'front' | 'side' | 'back'
+
+/** 体の写真。画像本体は IndexedDB（id で引く） */
+export interface BodyPhoto {
+  id: string
+  memberId?: string
+  date: string
+  pose: PhotoPose
+  memo: string
+}
+
 /** 記録する人。コーチが複数人の記録を取る用途のため */
 export interface Member {
   id: string
@@ -80,4 +91,5 @@ export interface AppData {
   abilities: PhysicalAbility[]
   sessions: TrainingSession[]
   conditions: ConditionRecord[]
+  photos: BodyPhoto[]
 }

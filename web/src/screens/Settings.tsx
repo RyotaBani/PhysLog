@@ -42,7 +42,7 @@ function toCSV(d: AppData, memberName: string) {
   return '﻿' + lines.join('\r\n')
 }
 
-export function Settings() {
+export function Settings(props: { onOpenMenu: () => void }) {
   const raw = useRawData()
   const view = useData()
   const file = useRef<HTMLInputElement>(null)
@@ -92,6 +92,7 @@ export function Settings() {
         </div>
       </div>
 
+      <button className="btn block mobile-only" style={{ marginBottom: 12, background: 'var(--card)', justifyContent: 'flex-start' }} onClick={props.onOpenMenu}>📋 メニュー提案を開く</button>
       <div className="card">
         <div className="card-h"><h2>プロフィール</h2></div>
         <label className="label">普段の競技（トレーニング記録の初期値）</label>
@@ -103,7 +104,7 @@ export function Settings() {
 
       <div className="card">
         <div className="card-h"><h2>データ</h2></div>
-        <div className="sub" style={{ marginBottom: 10 }}>記録はこのブラウザの中だけに保存されます（外部には送信しません）。機種変更やバックアップには「書き出し」を使ってください。</div>
+        <div className="sub" style={{ marginBottom: 10 }}>記録と写真はこのブラウザの中だけに保存されます（外部には送信しません）。機種変更やバックアップには「書き出し」を使ってください（写真はバックアップに含まれません）。</div>
         <div className="grid2">
           <button className="btn" onClick={() => download(`physlog-${todayKey()}.json`, JSON.stringify(raw, null, 2), 'application/json')}>バックアップ（全員）</button>
           <button className="btn" onClick={() => download(`physlog-${active.name}-${todayKey()}.csv`, toCSV(view, active.name), 'text/csv')}>CSV（{active.name}）</button>
